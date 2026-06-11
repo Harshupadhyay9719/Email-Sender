@@ -1,0 +1,13 @@
+{
+  "name": "email-sender",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev"
+  }
+}
