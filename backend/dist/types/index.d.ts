@@ -42,10 +42,14 @@ export declare enum EmailStatus {
 export interface ContactInterface {
     _id?: string;
     name: string;
-    email: string;
+    companyName?: string;
+    email?: string;
     phone?: string;
     position?: string;
     department?: string;
+    linkedin?: string;
+    city?: string;
+    notes?: string;
     emailValidation: {
         status: EmailValidationStatus;
         validatedAt?: Date;
@@ -72,6 +76,7 @@ export interface OrganizationInterface {
     companyName: string;
     industry?: string;
     website?: string;
+    tags?: string[];
     createdBy: string;
     createdAt: Date;
     updatedAt: Date;
@@ -221,6 +226,13 @@ export interface ImportLogInterface {
     fileName: string;
     fileSize: number;
     s3Key?: string;
+    organizationName?: string;
+    duplicateStrategy?: 'merge' | 'replace';
+    columnMappings?: Array<{
+        excelColumn: string;
+        field: string;
+        confidence?: number;
+    }>;
     results: {
         totalRows: number;
         successfulImports: number;

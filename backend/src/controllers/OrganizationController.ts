@@ -237,7 +237,7 @@ export class OrganizationController {
           csv += `"${org.companyName.replace(/"/g, '""')}","${(org.industry || '').replace(/"/g, '""')}","${(org.website || '').replace(/"/g, '""')}","","","",""\n`;
         } else {
           for (const contact of org.contacts) {
-            csv += `"${org.companyName.replace(/"/g, '""')}","${(org.industry || '').replace(/"/g, '""')}","${(org.website || '').replace(/"/g, '""')}","${contact.name.replace(/"/g, '""')}","${contact.email.replace(/"/g, '""')}","${(contact.phone || '').replace(/"/g, '""')}","${contact.emailValidation?.status || 'UNKNOWN'}"\n`;
+            csv += `"${org.companyName.replace(/"/g, '""')}","${(org.industry || '').replace(/"/g, '""')}","${(org.website || '').replace(/"/g, '""')}","${contact.name.replace(/"/g, '""')}","${(contact.email || '').replace(/"/g, '""')}","${(contact.phone || '').replace(/"/g, '""')}","${contact.emailValidation?.status || 'UNKNOWN'}"\n`;
           }
         }
       }

@@ -49,6 +49,7 @@ export enum EmailStatus {
 export interface ContactInterface {
   _id?: string;
   name: string;
+  companyName?: string;
   email?: string;
   phone?: string;
   position?: string;

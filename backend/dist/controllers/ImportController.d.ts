@@ -1,29 +1,36 @@
 /**
  * Import Controller
- * Handles Excel file imports for organizations
+ * Dynamic column-mapping Excel import into a single named organization
  */
 import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 export declare const uploadMiddleware: multer.Multer;
 export declare class ImportController {
     /**
-     * POST /import/upload
-     * Upload and parse Excel file
+     * POST /import/preview-columns
+     * Upload file, extract headers, suggest column mappings
      */
-    static upload(req: Request, res: Response, next: NextFunction): Promise<void>;
+    static previewColumns(req: Request, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * POST /import/preview-mapped
+     * Apply user mappings and return contact preview
+     */
+    static previewMapped(req: Request, res: Response, next: NextFunction): Promise<void>;
     /**
      * POST /import/:importId/confirm
-     * Confirm and process import
+     * Confirm and import contacts using saved mappings
      */
     static confirm(req: Request, res: Response, next: NextFunction): Promise<void>;
     /**
      * GET /import/:importId
-     * Get import log details
      */
     static getStatus(req: Request, res: Response, next: NextFunction): Promise<void>;
     /**
-     * GET /import/template
-     * Download sample Excel template
+     * GET /import/templates
+     */
+    static listTemplates(_req: Request, res: Response): void;
+    /**
+     * GET /import/template/:type
      */
     static downloadTemplate(req: Request, res: Response): void;
 }

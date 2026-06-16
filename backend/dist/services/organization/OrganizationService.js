@@ -22,9 +22,13 @@ class OrganizationService {
             if (!user) {
                 throw new errors_1.NotFoundError('User');
             }
-            // Check for duplicate company name
+            // Check for duplicate company name (scoped to user, case-insensitive)
             const existing = await index_1.Organization.findOne({
-                companyName: data.companyName.trim(),
+                companyName: {
+                    $regex: `^${data.companyName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+                    $options: 'i',
+                },
+                createdBy: userId,
             });
             if (existing) {
                 throw new errors_1.ConflictError(`Organization "${data.companyName}" already exists`);
@@ -127,10 +131,14 @@ class OrganizationService {
             if (!organization) {
                 throw new errors_1.NotFoundError('Organization');
             }
-            // Check for duplicate company name if changing
-            if (data.companyName && data.companyName !== organization.companyName) {
+            // Check for duplicate company name if changing (scoped to user, case-insensitive)
+            if (data.companyName && data.companyName.toLowerCase() !== organization.companyName.toLowerCase()) {
                 const existing = await index_1.Organization.findOne({
-                    companyName: data.companyName.trim(),
+                    companyName: {
+                        $regex: `^${data.companyName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+                        $options: 'i',
+                    },
+                    createdBy: organization.createdBy,
                     _id: { $ne: organizationId },
                 });
                 if (existing) {
@@ -179,14 +187,17 @@ class OrganizationService {
                 throw new errors_1.NotFoundError('Organization');
             }
             // Check for duplicate email in this organization
-            const emailExists = organization.contacts.some((c) => c.email.toLowerCase() === contactData.email.toLowerCase());
-            if (emailExists) {
-                throw new errors_1.ConflictError('Email already exists in this organization');
+            if (contactData.email) {
+                const emailKey = contactData.email.toLowerCase();
+                const emailExists = organization.contacts.some((c) => (c.email || '').toLowerCase() === emailKey);
+                if (emailExists) {
+                    throw new errors_1.ConflictError('Email already exists in this organization');
+                }
             }
             // Create new contact
             const newContact = {
                 name: contactData.name.trim(),
-                email: contactData.email.toLowerCase().trim(),
+                email: contactData.email?.toLowerCase().trim() || '',
                 phone: contactData.phone?.trim(),
                 position: contactData.position?.trim(),
                 department: contactData.department?.trim(),
@@ -232,9 +243,9 @@ class OrganizationService {
                 throw new errors_1.NotFoundError('Contact');
             }
             // Check for duplicate email if changing
-            if (contactData.email && contactData.email.toLowerCase() !== contact.email) {
+            if (contactData.email && contactData.email.toLowerCase() !== (contact.email || '')) {
                 const nextEmail = contactData.email.toLowerCase();
-                const emailExists = organization.contacts.some((c) => c._id?.toString() !== contactId && c.email.toLowerCase() === nextEmail);
+                const emailExists = organization.contacts.some((c) => c._id?.toString() !== contactId && (c.email || '').toLowerCase() === nextEmail);
                 if (emailExists) {
                     throw new errors_1.ConflictError('Email already exists in this organization');
                 }
@@ -294,7 +305,7 @@ class OrganizationService {
             let invalidCount = 0;
             // Update validation status for each contact
             organization.contacts.forEach((contact) => {
-                const result = validationResults.find((r) => r.email.toLowerCase() === contact.email.toLowerCase());
+                const result = validationResults.find((r) => r.email.toLowerCase() === (contact.email || '').toLowerCase());
                 if (result) {
                     contact.emailValidation.status = result.status;
                     contact.emailValidation.validatedAt = new Date();

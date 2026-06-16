@@ -503,17 +503,17 @@ class CampaignService {
         }
 
         // Find first valid contact
-        const validContact = org.contacts.find(
+        const validContacts = org.contacts.filter(
           (contact) =>
             contact.emailValidation.status === 'VALID' &&
-            !campaign.config.excludeEmails.includes(contact.email)
+            !campaign.config.excludeEmails.includes(contact.email || '')
         );
 
-        if (validContact) {
+        for (const contact of validContacts) {
           selectedContacts.push({
             organizationId: org._id.toString(),
-            contactId: validContact._id?.toString() || '',
-            contactEmail: validContact.email,
+            contactId: contact._id?.toString() || '',
+            contactEmail: contact.email || '',
           });
         }
       }
@@ -628,13 +628,13 @@ class CampaignService {
         const refreshed = await Organization.findById(organization._id);
         if (!refreshed) continue;
 
-        const selectedContact = refreshed.contacts.find(
+        const selectedContacts = refreshed.contacts.filter(
           (c) =>
             c.emailValidation.status === 'VALID' &&
-            !campaign.config.excludeEmails.includes(c.email.toLowerCase())
+            !campaign.config.excludeEmails.includes((c.email || '').toLowerCase())
         );
 
-        if (!selectedContact) {
+        if (selectedContacts.length === 0) {
           skippedCount += 1;
           await EmailLog.create({
             campaignId: campaign._id,
@@ -653,65 +653,67 @@ class CampaignService {
               openCount: 0,
               clickCount: 0,
               failureAttempts: 0,
-              failureReason: 'No valid contact found for organisation',
+              failureReason: 'No valid contact found for slot',
             },
           });
           continue;
         }
 
-        const mergeFields: Record<string, string> = {
-          company_name: refreshed.companyName,
-          companyName:  refreshed.companyName,
-          contact_name: selectedContact.name,
-          contactName:  selectedContact.name,
-          industry:     refreshed.industry || '',
-          website:      refreshed.website  || '',
-        };
+        for (const selectedContact of selectedContacts) {
+          const mergeFields: Record<string, string> = {
+            company_name: selectedContact.companyName || refreshed.companyName,
+            companyName:  selectedContact.companyName || refreshed.companyName,
+            contact_name: selectedContact.name,
+            contactName:  selectedContact.name,
+            industry:     refreshed.industry || '',
+            website:      refreshed.website  || '',
+          };
 
-        const emailLog = await EmailLog.create({
-          campaignId: campaign._id,
-          organizationId: refreshed._id,
-          contactId: selectedContact._id,
-          recipientEmail: selectedContact.email,
-          recipientName:  selectedContact.name,
-          personalizedContent: {
-            subject:  StringUtils.replaceMergeFields(campaign.emailContent.subject,  mergeFields),
-            htmlBody: StringUtils.replaceMergeFields(campaign.emailContent.htmlBody, mergeFields),
-            textBody: campaign.emailContent.textBody
-              ? StringUtils.replaceMergeFields(campaign.emailContent.textBody, mergeFields)
-              : undefined,
-          },
-          mergeFieldsApplied: mergeFields,
-          status: EmailStatus.QUEUED,
-          tracking: { openCount: 0, clickCount: 0, failureAttempts: 0 },
-        });
+          const emailLog = await EmailLog.create({
+            campaignId: campaign._id,
+            organizationId: refreshed._id,
+            contactId: selectedContact._id,
+            recipientEmail: selectedContact.email,
+            recipientName:  selectedContact.name,
+            personalizedContent: {
+              subject:  StringUtils.replaceMergeFields(campaign.emailContent.subject,  mergeFields),
+              htmlBody: StringUtils.replaceMergeFields(campaign.emailContent.htmlBody, mergeFields),
+              textBody: campaign.emailContent.textBody
+                ? StringUtils.replaceMergeFields(campaign.emailContent.textBody, mergeFields)
+                : undefined,
+            },
+            mergeFieldsApplied: mergeFields,
+            status: EmailStatus.QUEUED,
+            tracking: { openCount: 0, clickCount: 0, failureAttempts: 0 },
+          });
 
-        selectedContact.emailSendStatus.selected = true;
-        selectedContact.emailSendStatus.firstValidContactUsed = true;
-        await refreshed.save();
+          selectedContact.emailSendStatus.selected = true;
+          selectedContact.emailSendStatus.firstValidContactUsed = true;
+          await refreshed.save();
 
-        // Add a random inter-email delay (configurable via sendingConfig)
-        cumulativeDelayMs += ValidationUtils.getRandomDelay(
-          campaign.config.sendingConfig.minimumDelaySeconds,
-          campaign.config.sendingConfig.maximumDelaySeconds
-        );
-
-        // Schedule the send via setTimeout — no Redis required
-        const logIdStr  = emailLog._id.toString();
-        const campIdStr = campaign._id.toString();
-        const delayMs   = cumulativeDelayMs;
-
-        setTimeout(() => {
-          sendCampaignEmailDirectly(campIdStr, logIdStr).catch((err) =>
-            logger.error(`[Launch] Direct send failed for log ${logIdStr}:`, err)
+          // Add a random inter-email delay (configurable via sendingConfig)
+          cumulativeDelayMs += ValidationUtils.getRandomDelay(
+            campaign.config.sendingConfig.minimumDelaySeconds,
+            campaign.config.sendingConfig.maximumDelaySeconds
           );
-        }, delayMs);
 
-        logger.info(
-          `[Launch] Scheduled email for ${selectedContact.email} in ${Math.round(delayMs / 1000)} s`
-        );
+          // Schedule the send via setTimeout — no Redis required
+          const logIdStr  = emailLog._id.toString();
+          const campIdStr = campaign._id.toString();
+          const delayMs   = cumulativeDelayMs;
 
-        queuedCount += 1;
+          setTimeout(() => {
+            sendCampaignEmailDirectly(campIdStr, logIdStr).catch((err) =>
+              logger.error(`[Launch] Direct send failed for log ${logIdStr}:`, err)
+            );
+          }, delayMs);
+
+          logger.info(
+            `[Launch] Scheduled email for ${selectedContact.email} in ${Math.round(delayMs / 1000)} s`
+          );
+
+          queuedCount += 1;
+        }
       }
 
       // ── Update campaign record ────────────────────────────────────────────

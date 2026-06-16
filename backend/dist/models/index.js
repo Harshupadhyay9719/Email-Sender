@@ -103,15 +103,19 @@ const contactSchema = new mongoose_1.Schema({
         required: true,
         trim: true,
     },
+    companyName: String,
     email: {
         type: String,
-        required: true,
         lowercase: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email format'],
+        trim: true,
+        default: '',
     },
     phone: String,
     position: String,
     department: String,
+    linkedin: String,
+    city: String,
+    notes: String,
     emailValidation: {
         status: {
             type: String,
@@ -173,6 +177,7 @@ const organizationSchema = new mongoose_1.Schema({
     },
     industry: String,
     website: String,
+    tags: [String],
     createdBy: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'User',
@@ -460,6 +465,18 @@ const importLogSchema = new mongoose_1.Schema({
     },
     fileSize: Number,
     s3Key: String,
+    organizationName: String,
+    duplicateStrategy: {
+        type: String,
+        enum: ['merge', 'replace'],
+    },
+    columnMappings: [
+        {
+            excelColumn: String,
+            field: String,
+            confidence: Number,
+        },
+    ],
     results: {
         totalRows: {
             type: Number,

@@ -312,10 +312,10 @@ class OrganizationService {
       }
 
       // Check for duplicate email if changing
-      if (contactData.email && contactData.email.toLowerCase() !== contact.email) {
+      if (contactData.email && contactData.email.toLowerCase() !== (contact.email || '')) {
         const nextEmail = contactData.email.toLowerCase();
         const emailExists = organization.contacts.some(
-          (c) => c._id?.toString() !== contactId && c.email.toLowerCase() === nextEmail
+          (c) => c._id?.toString() !== contactId && (c.email || '').toLowerCase() === nextEmail
         );
 
         if (emailExists) {
@@ -390,7 +390,7 @@ class OrganizationService {
       // Update validation status for each contact
       organization.contacts.forEach((contact) => {
         const result = validationResults.find(
-          (r) => r.email.toLowerCase() === contact.email.toLowerCase()
+          (r) => r.email.toLowerCase() === (contact.email || '').toLowerCase()
         );
 
         if (result) {

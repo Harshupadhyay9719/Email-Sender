@@ -215,7 +215,7 @@ export class ImportController {
         req.user!.userId,
         importLog.organizationName,
         filePath,
-        columnMappings,
+        columnMappings as ColumnMapping[],
         duplicateStrategy ?? null,
         importId
       );

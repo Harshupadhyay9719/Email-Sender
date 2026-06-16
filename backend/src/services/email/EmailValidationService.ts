@@ -68,7 +68,7 @@ class EmailValidationService {
       const currentStatus = contact.emailValidation?.status;
       if (currentStatus === EmailValidationStatus.VALID || currentStatus === EmailValidationStatus.INVALID) {
         results.push({
-          email: contact.email,
+          email: contact.email || '',
           status: currentStatus,
           reason: contact.emailValidation.reason,
           validatedAt: contact.emailValidation.validatedAt || new Date(),
@@ -76,7 +76,7 @@ class EmailValidationService {
         continue;
       }
 
-      const result = await this.validateEmail(contact.email);
+      const result = await this.validateEmail(contact.email || '');
       contact.emailValidation = {
         status: result.status,
         reason: result.reason,

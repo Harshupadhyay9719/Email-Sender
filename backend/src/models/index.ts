@@ -76,6 +76,7 @@ const contactSchema = new Schema<any>(
       required: true,
       trim: true,
     },
+    companyName: String,
     email: {
       type: String,
       lowercase: true,

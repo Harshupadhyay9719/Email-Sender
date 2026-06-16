@@ -218,6 +218,7 @@ class OrgImportService {
       },
     };
 
+    if (raw.companyName) doc.companyName = raw.companyName.trim();
     if (raw.phone) doc.phone = raw.phone.trim();
     if (raw.position) doc.position = raw.position.trim();
     if (raw.department) doc.department = raw.department.trim();

@@ -9,6 +9,7 @@ import { ValidationError } from '../../utils/errors';
 
 export type MappableField =
   | 'contact.name'
+  | 'contact.companyName'
   | 'contact.email'
   | 'contact.phone'
   | 'contact.position'
@@ -35,6 +36,7 @@ export interface SuggestedMapping {
 
 export interface MappedContact {
   name?: string;
+  companyName?: string;
   email?: string;
   phone?: string;
   position?: string;
@@ -65,6 +67,7 @@ export interface MappedParseResult {
 
 const FIELD_LABELS: Record<MappableField, string> = {
   'contact.name': 'Contact Name',
+  'contact.companyName': 'Company Name',
   'contact.email': 'Email',
   'contact.phone': 'Phone',
   'contact.position': 'Position',
@@ -80,6 +83,7 @@ const FIELD_LABELS: Record<MappableField, string> = {
 
 const AUTO_MAP_RULES: Array<{ field: MappableField; patterns: string[] }> = [
   { field: 'contact.name', patterns: ['name', 'full name', 'contact name', 'person name', 'person', 'contact', 'full_name', 'contact_name'] },
+  { field: 'contact.companyName', patterns: ['company', 'company name', 'organisation', 'organization', 'employer', 'org', 'firm', 'business'] },
   { field: 'contact.email', patterns: ['email', 'e-mail', 'email address', 'work email', 'mail', 'e mail', 'email_address', 'work_email'] },
   { field: 'contact.phone', patterns: ['phone', 'mobile', 'cell', 'phone number', 'mobile number', 'contact number', 'telephone', 'phone_number', 'mobile_number'] },
   { field: 'contact.position', patterns: ['position', 'designation', 'role', 'job title', 'title', 'job_title'] },
@@ -306,6 +310,11 @@ class ColumnMappingService {
     for (const rule of AUTO_MAP_RULES) {
       if (usedFields.has(rule.field)) continue;
 
+      if (rule.field === 'contact.name') {
+        const isCompanyTerm = /\b(company|org|organization|firm|business|vendor|client)\b/i.test(normalized);
+        if (isCompanyTerm) continue;
+      }
+
       for (const pattern of rule.patterns) {
         const score = this.matchScore(normalized, pattern);
         if (score > best.confidence) {
@@ -351,8 +360,11 @@ class ColumnMappingService {
       case 'contact.name':
         contact.name = value;
         break;
+      case 'contact.companyName':
+        contact.companyName = value;
+        break;
       case 'contact.email':
-        contact.email = value.toLowerCase().trim();
+        contact.email = value.replace(/\s+/g, '').toLowerCase();
         break;
       case 'contact.phone':
         contact.phone = value;

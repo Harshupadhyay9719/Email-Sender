@@ -1,7 +1,7 @@
 "use strict";
 /**
  * Import Controller
- * Handles Excel file imports for organizations
+ * Dynamic column-mapping Excel import into a single named organization
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -11,28 +11,25 @@ exports.ImportController = exports.uploadMiddleware = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const multer_1 = __importDefault(require("multer"));
-const ExcelParserService_1 = __importDefault(require("../services/excel/ExcelParserService"));
-const OrganizationService_1 = __importDefault(require("../services/organization/OrganizationService"));
+const OrgImportService_1 = __importDefault(require("../services/organization/OrgImportService"));
+const ColumnMappingService_1 = __importDefault(require("../services/excel/ColumnMappingService"));
 const index_1 = require("../models/index");
 const responseHandler_1 = require("../utils/responseHandler");
 const errors_1 = require("../utils/errors");
 const logger_1 = __importDefault(require("../utils/logger"));
-// Configure multer for file uploads
 const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
+    destination: (_req, _file, cb) => {
         const uploadDir = path_1.default.join(__dirname, '../../uploads');
         if (!fs_1.default.existsSync(uploadDir)) {
             fs_1.default.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
-    filename: (req, file, cb) => {
-        const timestamp = Date.now();
-        cb(null, `${timestamp}-${file.originalname}`);
+    filename: (_req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
     },
 });
-const fileFilter = (req, file, cb) => {
-    // Only allow xlsx files
+const fileFilter = (_req, file, cb) => {
     if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
         file.originalname.endsWith('.xlsx')) {
         cb(null, true);
@@ -44,148 +41,146 @@ const fileFilter = (req, file, cb) => {
 exports.uploadMiddleware = (0, multer_1.default)({
     storage,
     fileFilter,
-    limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB
-    },
+    limits: { fileSize: 50 * 1024 * 1024 },
 });
 class ImportController {
     /**
-     * POST /import/upload
-     * Upload and parse Excel file
+     * POST /import/preview-columns
+     * Upload file, extract headers, suggest column mappings
      */
-    static async upload(req, res, next) {
+    static async previewColumns(req, res, next) {
         try {
             if (!req.file) {
                 throw new errors_1.ValidationError('No file uploaded');
             }
-            // Create import log
+            const organizationName = (req.body.organizationName || '').trim();
+            if (!organizationName) {
+                fs_1.default.unlink(req.file.path, () => { });
+                throw new errors_1.ValidationError('organizationName is required');
+            }
+            const columns = OrgImportService_1.default.extractColumns(req.file.path);
+            const suggestedMappings = OrgImportService_1.default.suggestMappings(columns);
+            const orgCheck = await OrgImportService_1.default.checkOrgExists(req.user.userId, organizationName);
             const importLog = new index_1.ImportLog({
                 importedBy: req.user.userId,
                 fileName: req.file.filename,
                 fileSize: req.file.size,
+                organizationName,
                 importStatus: 'processing',
+                results: {
+                    totalRows: 0,
+                    successfulImports: 0,
+                    failedImports: 0,
+                    duplicateOrganizations: orgCheck.exists ? [organizationName] : [],
+                    duplicateEmails: [],
+                    validationErrors: [],
+                },
             });
             await importLog.save();
-            // Parse Excel file
-            const parsedData = await ExcelParserService_1.default.parseExcelFile(req.file.path);
-            const response = {
+            responseHandler_1.ResponseHandler.accepted(res, {
                 importId: importLog._id,
-                status: 'processed',
-                summary: {
-                    totalRows: parsedData.rows.length,
-                    validRows: parsedData.rows.length,
-                    invalidRows: parsedData.validationErrors.length,
-                    duplicateOrganizations: parsedData.duplicateOrganizations.length,
-                    duplicateEmails: parsedData.duplicateEmails.length,
-                },
-                preview: {
-                    totalRows: parsedData.rows.length,
-                    sampleData: parsedData.rows.slice(0, 5),
-                    detectedColumns: parsedData.headers,
-                    warnings: [
-                        ...parsedData.duplicateOrganizations.map((org) => `Duplicate organization: "${org}"`),
-                        ...parsedData.duplicateEmails.map((email) => `Duplicate email: "${email}"`),
-                    ],
-                },
-                validationErrors: parsedData.validationErrors.slice(0, 10), // First 10 errors
-            };
-            // Update import log with results
-            importLog.results = {
-                totalRows: parsedData.rows.length,
-                successfulImports: 0,
-                failedImports: parsedData.validationErrors.length,
-                duplicateOrganizations: parsedData.duplicateOrganizations,
-                duplicateEmails: parsedData.duplicateEmails,
-                validationErrors: parsedData.validationErrors.map((error) => ({
-                    rowNumber: error.rowNumber,
-                    errorMessage: error.message,
-                    rowData: error.rowData,
-                })),
-            };
-            // Store parsed data in session for confirmation
-            req.session = req.session || {};
-            req.session.parsedExcelData = parsedData;
-            req.session.importLogId = importLog._id;
-            await importLog.save();
-            responseHandler_1.ResponseHandler.accepted(res, response, 'File parsed successfully');
+                organizationName,
+                orgExists: orgCheck.exists,
+                existingContactCount: orgCheck.existingContactCount,
+                columns,
+                suggestedMappings,
+                fieldOptions: ColumnMappingService_1.default.fieldOptions,
+            }, 'Columns extracted successfully');
         }
         catch (error) {
-            logger_1.default.error('Error uploading file:', error);
-            // Clean up uploaded file
-            if (req.file) {
-                fs_1.default.unlink(req.file.path, (err) => {
-                    if (err)
-                        logger_1.default.error('Error deleting file:', err);
-                });
+            logger_1.default.error('Error previewing columns:', error);
+            if (req.file)
+                fs_1.default.unlink(req.file.path, () => { });
+            next(error);
+        }
+    }
+    /**
+     * POST /import/preview-mapped
+     * Apply user mappings and return contact preview
+     */
+    static async previewMapped(req, res, next) {
+        try {
+            const { importId, mappings } = req.body;
+            if (!importId)
+                throw new errors_1.ValidationError('importId is required');
+            if (!mappings || !Array.isArray(mappings)) {
+                throw new errors_1.ValidationError('mappings array is required');
             }
+            const importLog = await index_1.ImportLog.findById(importId);
+            if (!importLog)
+                throw new errors_1.ValidationError('Import not found');
+            if (importLog.importedBy.toString() !== req.user.userId) {
+                throw new errors_1.ValidationError('Unauthorized access to this import');
+            }
+            if (importLog.importStatus !== 'processing') {
+                throw new errors_1.ValidationError(`Import cannot be previewed with status: ${importLog.importStatus}`);
+            }
+            const filePath = path_1.default.join(__dirname, '../../uploads', importLog.fileName);
+            if (!fs_1.default.existsSync(filePath)) {
+                throw new errors_1.ValidationError('Uploaded file no longer exists. Please upload again.');
+            }
+            const parsed = OrgImportService_1.default.parseWithMappings(filePath, mappings);
+            importLog.columnMappings = mappings;
+            importLog.results.totalRows = parsed.totalRows;
+            importLog.results.failedImports = parsed.invalidRows;
+            await importLog.save();
+            responseHandler_1.ResponseHandler.success(res, 200, 'Mapped preview generated', {
+                importId,
+                organizationName: importLog.organizationName,
+                orgExists: (importLog.results.duplicateOrganizations?.length ?? 0) > 0,
+                totalRows: parsed.totalRows,
+                validContacts: parsed.validContacts,
+                invalidRows: parsed.invalidRows,
+                duplicates: parsed.duplicateEmailsInFile,
+                sampleContacts: parsed.sampleContacts,
+                mappedFields: parsed.mappedFields,
+                ignoredColumns: parsed.ignoredColumns,
+                warnings: parsed.warnings,
+            });
+        }
+        catch (error) {
+            logger_1.default.error('Error previewing mapped import:', error);
             next(error);
         }
     }
     /**
      * POST /import/:importId/confirm
-     * Confirm and process import
+     * Confirm and import contacts using saved mappings
      */
     static async confirm(req, res, next) {
         try {
             const { importId } = req.params;
-            // Find import log
+            const duplicateStrategy = req.body.duplicateStrategy;
+            const mappings = req.body.mappings;
             const importLog = await index_1.ImportLog.findById(importId);
-            if (!importLog) {
+            if (!importLog)
                 throw new errors_1.ValidationError('Import not found');
-            }
-            // Verify import belongs to current user
             if (importLog.importedBy.toString() !== req.user.userId) {
                 throw new errors_1.ValidationError('Unauthorized access to this import');
             }
             if (importLog.importStatus !== 'processing') {
                 throw new errors_1.ValidationError(`Import cannot be confirmed with status: ${importLog.importStatus}`);
             }
-            // Parse file again to get data
+            if (!importLog.organizationName) {
+                throw new errors_1.ValidationError('Import is missing organization name');
+            }
+            const columnMappings = mappings ?? importLog.columnMappings;
+            if (!columnMappings || columnMappings.length === 0) {
+                throw new errors_1.ValidationError('Column mappings are required. Complete the mapping step first.');
+            }
+            const orgCheck = await OrgImportService_1.default.checkOrgExists(req.user.userId, importLog.organizationName);
+            if (orgCheck.exists && !duplicateStrategy) {
+                throw new errors_1.ValidationError('duplicateStrategy is required when organization already exists (merge or replace)');
+            }
+            if (duplicateStrategy && !['merge', 'replace'].includes(duplicateStrategy)) {
+                throw new errors_1.ValidationError('duplicateStrategy must be "merge" or "replace"');
+            }
             const filePath = path_1.default.join(__dirname, '../../uploads', importLog.fileName);
-            const parsedData = await ExcelParserService_1.default.parseExcelFile(filePath);
-            let successCount = 0;
-            const createdOrgIds = [];
-            // Create organizations
-            for (const row of parsedData.rows) {
-                try {
-                    const organization = await OrganizationService_1.default.createOrganization(req.user.userId, {
-                        companyName: row.companyName,
-                        industry: row.industry,
-                        website: row.website,
-                        contacts: row.contacts,
-                    });
-                    successCount++;
-                    createdOrgIds.push(organization._id?.toString() || '');
-                }
-                catch (error) {
-                    logger_1.default.error(`Error creating organization "${row.companyName}":`, error.message);
-                }
+            if (!fs_1.default.existsSync(filePath)) {
+                throw new errors_1.ValidationError('Uploaded file no longer exists. Please upload again.');
             }
-            // Update import log
-            importLog.importStatus = 'completed';
-            importLog.completedAt = new Date();
-            importLog.results.successfulImports = successCount;
-            importLog.results.failedImports = parsedData.rows.length - successCount;
-            importLog.organizationsCreated = createdOrgIds;
-            await importLog.save();
-            logger_1.default.info(`Import completed: ${successCount} organizations created, ${parsedData.rows.length - successCount} failed`);
-            // Clean up uploaded file
-            if (fs_1.default.existsSync(filePath)) {
-                fs_1.default.unlink(filePath, (err) => {
-                    if (err)
-                        logger_1.default.error('Error deleting file:', err);
-                });
-            }
-            const response = {
-                importId: importLog._id,
-                status: 'completed',
-                results: {
-                    totalImported: successCount,
-                    totalFailed: parsedData.rows.length - successCount,
-                    organizationsCreated: createdOrgIds,
-                },
-            };
-            responseHandler_1.ResponseHandler.success(res, 200, 'Import completed successfully', response);
+            const result = await OrgImportService_1.default.confirmImport(req.user.userId, importLog.organizationName, filePath, columnMappings, duplicateStrategy ?? null, importId);
+            responseHandler_1.ResponseHandler.success(res, 200, 'Import completed successfully', result);
         }
         catch (error) {
             logger_1.default.error('Error confirming import:', error);
@@ -194,15 +189,12 @@ class ImportController {
     }
     /**
      * GET /import/:importId
-     * Get import log details
      */
     static async getStatus(req, res, next) {
         try {
-            const { importId } = req.params;
-            const importLog = await index_1.ImportLog.findById(importId);
-            if (!importLog) {
+            const importLog = await index_1.ImportLog.findById(req.params.importId);
+            if (!importLog)
                 throw new errors_1.ValidationError('Import not found');
-            }
             if (importLog.importedBy.toString() !== req.user.userId) {
                 throw new errors_1.ValidationError('Unauthorized access to this import');
             }
@@ -214,22 +206,28 @@ class ImportController {
         }
     }
     /**
-     * GET /import/template
-     * Download sample Excel template
+     * GET /import/templates
+     */
+    static listTemplates(_req, res) {
+        responseHandler_1.ResponseHandler.success(res, 200, 'Templates retrieved', ColumnMappingService_1.default.listTemplates());
+    }
+    /**
+     * GET /import/template/:type
      */
     static downloadTemplate(req, res) {
         try {
-            const buffer = ExcelParserService_1.default.createSampleTemplate();
-            res.setHeader('Content-Disposition', 'attachment; filename="email-import-template.xlsx"');
+            const type = (req.params.type || 'basic');
+            const valid = ['basic', 'sales-lead', 'b2b', 'custom'];
+            const templateType = valid.includes(type) ? type : 'basic';
+            const buffer = ColumnMappingService_1.default.createTemplate(templateType);
+            const filename = `${templateType}-contact-template.xlsx`;
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.send(buffer);
         }
         catch (error) {
             logger_1.default.error('Error downloading template:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Error downloading template',
-            });
+            res.status(500).json({ success: false, message: 'Error downloading template' });
         }
     }
 }
