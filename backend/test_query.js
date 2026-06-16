@@ -15,18 +15,62 @@ async function run() {
     await mongoose.connect(mongoUri);
     console.log('✓ Connected successfully.');
 
-    // Query connected accounts
-    const accounts = await mongoose.connection.db.collection('connectedaccounts').find({}).toArray();
-    console.log(`Found ${accounts.length} connected account(s):`);
-    accounts.forEach(acc => {
-      console.log(`- Email: ${acc.email}, User: ${acc.userId}, Provider: ${acc.provider}, HasRefreshToken: ${!!acc.refreshToken}, ExpiryDate: ${acc.expiryDate ? new Date(acc.expiryDate).toISOString() : 'N/A'}`);
+    const users = await mongoose.connection.db.collection('users').find({}).toArray();
+
+    // Search in campaigns
+    const campaignsTesting = await mongoose.connection.db.collection('campaigns').find({
+      $or: [
+        { campaignName: /prabuddha/i },
+        { campaignName: /siemens/i },
+        { campaignName: /testing/i }
+      ]
+    }).toArray();
+    console.log(`\nMatching Campaigns (${campaignsTesting.length}):`);
+    campaignsTesting.forEach(c => {
+      console.log(`- ID: ${c._id}, Name: ${c.campaignName}, Status: ${c.config?.status}`);
     });
 
-    // Query users
-    const users = await mongoose.connection.db.collection('users').find({}).toArray();
-    console.log(`\nFound ${users.length} user(s):`);
-    users.forEach(u => {
-      console.log(`- Email: ${u.email}, ID: ${u._id}, Role: ${u.role}`);
+    // Search in organizations (Slots)
+    const orgsTesting = await mongoose.connection.db.collection('organizations').find({
+      $or: [
+        { companyName: /siemens/i },
+        { companyName: /testing/i },
+        { 'contacts.name': /prabuddha/i },
+        { 'contacts.companyName': /siemens/i }
+      ]
+    }).toArray();
+    console.log(`\nMatching Organizations/Slots (${orgsTesting.length}):`);
+    orgsTesting.forEach(o => {
+      console.log(`- ID: ${o._id}, CompanyName/SlotName: ${o.companyName}, Contacts Count: ${o.contacts?.length}`);
+      o.contacts?.forEach((c, idx) => {
+        console.log(`   * Contact ${idx}: Name=${c.name}, Email=${c.email}, Company=${c.companyName}`);
+      });
+    });
+
+    // Search in emaillogs
+    const logsTesting = await mongoose.connection.db.collection('emaillogs').find({
+      $or: [
+        { recipientName: /prabuddha/i },
+        { recipientEmail: /prabuddha/i }
+      ]
+    }).toArray();
+    console.log(`\nMatching EmailLogs (${logsTesting.length}):`);
+    logsTesting.forEach(l => {
+      console.log(`- ID: ${l._id}, Recipient: ${l.recipientName} (${l.recipientEmail}), Status: ${l.status}`);
+    });
+
+    // Search in importlogs
+    const importsTesting = await mongoose.connection.db.collection('importlogs').find({
+      $or: [
+        { fileName: /prabuddha/i },
+        { organizationName: /prabuddha/i },
+        { organizationName: /siemens/i },
+        { organizationName: /testing/i }
+      ]
+    }).toArray();
+    console.log(`\nMatching ImportLogs (${importsTesting.length}):`);
+    importsTesting.forEach(i => {
+      console.log(`- ID: ${i._id}, FileName: ${i.fileName}, OrgName: ${i.organizationName}, Status: ${i.importStatus}`);
     });
 
     // Generate JWT access token for the first user

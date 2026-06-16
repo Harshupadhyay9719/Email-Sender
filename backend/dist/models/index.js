@@ -530,19 +530,23 @@ const connectedAccountSchema = new mongoose_1.Schema({
     },
     email: {
         type: String,
-        required: true,
         lowercase: true,
         trim: true,
     },
     refreshToken: {
         type: String,
-        required: true,
     },
     accessToken: {
         type: String,
     },
     expiryDate: {
         type: Number,
+    },
+    clientId: {
+        type: String,
+    },
+    clientSecret: {
+        type: String,
     },
 }, {
     timestamps: true,

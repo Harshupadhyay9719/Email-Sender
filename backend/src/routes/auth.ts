@@ -15,6 +15,7 @@ router.post('/login', AuthController.login);
 router.post('/refresh', AuthController.refresh);
 
 // Google OAuth Redirect and Callback
+router.post('/google/initiate', authenticate, GoogleAuthController.initiateGoogleAuth);
 router.get('/google', GoogleAuthController.redirectToGoogle);
 router.get('/google/callback', GoogleAuthController.handleCallback);
 

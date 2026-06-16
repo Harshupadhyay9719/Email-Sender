@@ -9,13 +9,13 @@ export interface SendEmailInput {
 }
 declare class GmailService {
     /**
-     * Get an OAuth2 client configured with environment credentials
+     * Get an OAuth2 client configured with environment or custom credentials
      */
-    getOAuth2Client(): import("googleapis-common").OAuth2Client;
+    getOAuth2Client(account?: any): import("googleapis-common").OAuth2Client;
     /**
-     * Generate Auth URL for consent screen
+     * Generate Auth URL for consent screen using custom credentials if provided
      */
-    getAuthUrl(state: string): string;
+    getAuthUrl(state: string, clientId?: string, clientSecret?: string): string;
     verifyGmailSendScope(connectedAccount: any): Promise<string[]>;
     /**
      * Connect and save Google account using authorization code

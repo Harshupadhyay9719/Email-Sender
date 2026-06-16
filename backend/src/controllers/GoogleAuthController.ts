@@ -4,6 +4,7 @@ import GmailService from '../services/email/GmailService';
 import { ConnectedAccount } from '../models/index';
 import { ResponseHandler } from '../utils/responseHandler';
 import { ValidationError, AuthenticationError } from '../utils/errors';
+import { encrypt } from '../utils/encryption';
 import logger from '../utils/logger';
 
 export class GoogleAuthController {
@@ -27,6 +28,53 @@ export class GoogleAuthController {
       res.redirect(authUrl);
     } catch (error) {
       logger.error('Error redirecting to Google OAuth:', error);
+      next(error);
+    }
+  }
+
+  /**
+   * POST /auth/google/initiate
+   * Initiate Google OAuth flow by saving custom client ID/secret and generating Auth URL
+   */
+  static async initiateGoogleAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        throw new AuthenticationError('User not authenticated');
+      }
+
+      const { clientId, clientSecret } = req.body;
+      if (!clientId || !clientSecret) {
+        throw new ValidationError('Google Client ID and Client Secret are required');
+      }
+
+      // Find or create ConnectedAccount
+      let account = await ConnectedAccount.findOne({ userId, provider: 'google' });
+      if (!account) {
+        account = new ConnectedAccount({
+          userId,
+          provider: 'google',
+        });
+      }
+
+      // Encrypt and store keys
+      account.clientId = encrypt(clientId);
+      account.clientSecret = encrypt(clientSecret);
+      await account.save();
+
+      // Extract raw JWT token from Authorization header to pass as state parameter
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
+      if (!token) {
+        throw new AuthenticationError('Authorization token is missing');
+      }
+
+      // Generate the URL for the consent screen using custom credentials
+      const authUrl = GmailService.getAuthUrl(token, clientId, clientSecret);
+
+      ResponseHandler.success(res, 200, 'OAuth connection initiated successfully', { authUrl });
+    } catch (error) {
+      logger.error('Error initiating Google OAuth:', error);
       next(error);
     }
   }
@@ -73,7 +121,7 @@ export class GoogleAuthController {
 
       const account = await ConnectedAccount.findOne({ userId, provider: 'google' });
 
-      if (account) {
+      if (account && account.email && account.refreshToken) {
         ResponseHandler.success(res, 200, 'Connected account found', {
           connected: true,
           email: account.email,

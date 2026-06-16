@@ -54,7 +54,7 @@ export function Dashboard() {
   const c = charts ?? {};
 
   const statCards = [
-    { label: "Total Organizations", value: (m.totalOrganizations ?? 0).toLocaleString(), icon: Building2 },
+    { label: "Total Slots", value: (m.totalOrganizations ?? 0).toLocaleString(), icon: Building2 },
     { label: "Total Contacts", value: (m.totalContacts ?? 0).toLocaleString(), icon: Users },
     { label: "Emails Sent", value: (m.emailsSent ?? 0).toLocaleString(), icon: Mail },
     { label: "Open Rate", value: `${m.openRate ?? 0}%`, icon: CheckCircle2, positive: true, change: "vs last period" },
@@ -102,7 +102,7 @@ export function Dashboard() {
       {/* Coverage breakdown */}
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2"><CardDescription>Companies Contacted</CardDescription>
+          <CardHeader className="pb-2"><CardDescription>Slots Contacted</CardDescription>
             <CardTitle className="text-2xl">{(m.companiesContacted ?? 0).toLocaleString()}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardDescription>Companies Remaining</CardDescription>
+          <CardHeader className="pb-2"><CardDescription>Slots Remaining</CardDescription>
             <CardTitle className="text-2xl">{(m.companiesRemaining ?? 0).toLocaleString()}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -122,7 +122,7 @@ export function Dashboard() {
             <CardTitle className="text-2xl text-destructive">{(m.companiesWithNoValidContacts ?? 0).toLocaleString()}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Organizations with all contacts invalid</p>
+            <p className="text-xs text-muted-foreground">Slots with all contacts invalid</p>
           </CardContent>
         </Card>
       </section>

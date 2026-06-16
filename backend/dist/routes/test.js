@@ -49,7 +49,7 @@ router.post('/gmail-send', async (req, res) => {
                 provider: 'google',
             });
         }
-        if (!connectedAccount) {
+        if (!connectedAccount || !connectedAccount.email) {
             return res.status(404).json({
                 success: false,
                 message: 'No connected Gmail account found in the database. Please connect an account first.',

@@ -47,7 +47,7 @@ function ContactsDialog({ org, onClose }: { org: any; onClose: () => void }) {
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
-          Contacts — {org.companyName}
+          Contacts in Slot — {org.companyName}
           <Badge variant="secondary" className="ml-1">{org.contacts?.length ?? 0}</Badge>
         </DialogTitle>
       </DialogHeader>
@@ -64,7 +64,8 @@ function ContactsDialog({ org, onClose }: { org: any; onClose: () => void }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-medium text-sm">{c.name || "—"}</p>
-                {c.designation && <span className="text-xs text-muted-foreground">· {c.designation}</span>}
+                {c.companyName && <Badge variant="secondary" className="text-xs text-emerald-400 bg-emerald-950/20 border-emerald-900/30">{c.companyName}</Badge>}
+                {(c.position || c.designation) && <span className="text-xs text-muted-foreground">· {c.position || c.designation}</span>}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                 {c.email && (
@@ -169,7 +170,7 @@ function OrgRow({ org, onViewContacts, onDelete, onValidate }: { org: any; onVie
             )}
           </div>
           {org.contacts?.length === 0 && (
-            <p className="text-center text-xs text-muted-foreground py-4">No contacts in this organization.</p>
+            <p className="text-center text-xs text-muted-foreground py-4">No contacts in this slot.</p>
           )}
         </div>
       )}
@@ -206,18 +207,18 @@ export function Organizations() {
   });
 
   const validateMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/organizations/${id}/validate-contacts`, { method: "POST" }),
+    mutationFn: (id: string) => apiRequest(`/organizations/${id}/validate`, { method: "POST" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["organizations"] }),
   });
 
   const exportCSV = async () => {
     const url = `${(import.meta as any).env?.VITE_API_URL ?? "http://localhost:5000/api"}/organizations/export`;
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const blob = await res.blob();
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "organizations.csv";
+    a.download = "slots.csv";
     a.click();
   };
 
@@ -229,9 +230,9 @@ export function Organizations() {
     <div className="page-shell">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Organizations</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Slots</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            {total.toLocaleString()} companies · manage contacts & email status
+            {total.toLocaleString()} slots · manage contacts & email status
           </p>
         </div>
         <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}>
@@ -245,7 +246,7 @@ export function Organizations() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search company, industry, website…"
+            placeholder="Search slot name, industry, website…"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
           />
@@ -274,7 +275,7 @@ export function Organizations() {
         <Card className="py-16 text-center">
           <CardContent>
             <Building2 className="mx-auto h-10 w-10 text-muted-foreground/40" />
-            <p className="mt-3 text-sm text-muted-foreground">No organizations found. Import an Excel file to get started.</p>
+            <p className="mt-3 text-sm text-muted-foreground">No slots found. Import an Excel file to get started.</p>
           </CardContent>
         </Card>
       ) : (

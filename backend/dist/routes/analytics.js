@@ -10,5 +10,9 @@ router.use(auth_1.requireOperator);
 // Analytics endpoints
 router.get('/dashboard', AnalyticsController_1.AnalyticsController.getDashboard);
 router.get('/charts', AnalyticsController_1.AnalyticsController.getCharts);
+router.get('/reports', AnalyticsController_1.AnalyticsController.getReportsMetrics);
+router.get('/activity', AnalyticsController_1.AnalyticsController.getActivity);
+router.get('/saved', AnalyticsController_1.AnalyticsController.getSavedReports);
+router.get('/export', AnalyticsController_1.AnalyticsController.exportReport);
 exports.default = router;
 //# sourceMappingURL=analytics.js.map

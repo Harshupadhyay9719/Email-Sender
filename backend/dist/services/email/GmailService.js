@@ -10,16 +10,18 @@ const env_1 = __importDefault(require("../../config/env"));
 const logger_1 = __importDefault(require("../../utils/logger"));
 class GmailService {
     /**
-     * Get an OAuth2 client configured with environment credentials
+     * Get an OAuth2 client configured with environment or custom credentials
      */
-    getOAuth2Client() {
-        return new googleapis_1.google.auth.OAuth2(env_1.default.google_client_id, env_1.default.google_client_secret, env_1.default.google_callback_url);
+    getOAuth2Client(account) {
+        const clientId = account?.clientId ? (0, encryption_1.decrypt)(account.clientId) : env_1.default.google_client_id;
+        const clientSecret = account?.clientSecret ? (0, encryption_1.decrypt)(account.clientSecret) : env_1.default.google_client_secret;
+        return new googleapis_1.google.auth.OAuth2(clientId, clientSecret, env_1.default.google_callback_url);
     }
     /**
-     * Generate Auth URL for consent screen
+     * Generate Auth URL for consent screen using custom credentials if provided
      */
-    getAuthUrl(state) {
-        const oauth2Client = this.getOAuth2Client();
+    getAuthUrl(state, clientId, clientSecret) {
+        const oauth2Client = new googleapis_1.google.auth.OAuth2(clientId || env_1.default.google_client_id, clientSecret || env_1.default.google_client_secret, env_1.default.google_callback_url);
         return oauth2Client.generateAuthUrl({
             access_type: 'offline',
             prompt: 'consent',
@@ -36,7 +38,7 @@ class GmailService {
     }
     async verifyGmailSendScope(connectedAccount) {
         try {
-            const oauth2Client = this.getOAuth2Client();
+            const oauth2Client = this.getOAuth2Client(connectedAccount);
             let accessToken = connectedAccount.accessToken;
             let tokenInfo;
             try {
@@ -66,14 +68,18 @@ class GmailService {
      */
     async connectAccount(userId, code) {
         try {
-            const oauth2Client = this.getOAuth2Client();
+            const account = await index_1.ConnectedAccount.findOne({ userId, provider: 'google' });
+            if (!account) {
+                throw new Error('No connection initiation record found. Please start the connection flow again.');
+            }
+            const oauth2Client = this.getOAuth2Client(account);
             // Exchange authorization code for tokens
             const { tokens } = await oauth2Client.getToken(code);
             oauth2Client.setCredentials(tokens);
             if (!tokens.refresh_token) {
                 // Check if there is already a saved account
                 const existing = await index_1.ConnectedAccount.findOne({ userId, provider: 'google' });
-                if (!existing) {
+                if (!existing || !existing.refreshToken) {
                     throw new Error('Failed to retrieve refresh token. Please revoke access in your Google Security settings and try again.');
                 }
                 tokens.refresh_token = (0, encryption_1.decrypt)(existing.refreshToken);
@@ -86,13 +92,12 @@ class GmailService {
                 throw new Error('Could not fetch email from Google profile info');
             }
             const encryptedRefreshToken = (0, encryption_1.encrypt)(tokens.refresh_token);
-            // Create or update the connected account
-            const account = await index_1.ConnectedAccount.findOneAndUpdate({ userId, provider: 'google' }, {
-                email: email.toLowerCase(),
-                refreshToken: encryptedRefreshToken,
-                accessToken: tokens.access_token,
-                expiryDate: tokens.expiry_date,
-            }, { upsert: true, new: true });
+            // Update the connected account details
+            account.email = email.toLowerCase();
+            account.refreshToken = encryptedRefreshToken;
+            account.accessToken = tokens.access_token || undefined;
+            account.expiryDate = tokens.expiry_date || undefined;
+            await account.save();
             logger_1.default.info(`✓ Successfully connected Gmail account: ${email} for user: ${userId}`);
             return account;
         }
@@ -106,7 +111,7 @@ class GmailService {
      */
     async refreshAccessToken(connectedAccount) {
         try {
-            const oauth2Client = this.getOAuth2Client();
+            const oauth2Client = this.getOAuth2Client(connectedAccount);
             const decryptedRefreshToken = (0, encryption_1.decrypt)(connectedAccount.refreshToken);
             oauth2Client.setCredentials({
                 refresh_token: decryptedRefreshToken,
@@ -151,7 +156,7 @@ class GmailService {
             }
             // Verify that the token has gmail.send scope before attempting to send
             await this.verifyGmailSendScope(account);
-            const oauth2Client = this.getOAuth2Client();
+            const oauth2Client = this.getOAuth2Client(account);
             oauth2Client.setCredentials({
                 access_token: accessToken,
             });
@@ -199,7 +204,10 @@ class GmailService {
             }
             // Try revoking token from Google's servers
             try {
-                const oauth2Client = this.getOAuth2Client();
+                if (!account.refreshToken) {
+                    throw new Error('Refresh token is missing');
+                }
+                const oauth2Client = this.getOAuth2Client(account);
                 const refreshToken = (0, encryption_1.decrypt)(account.refreshToken);
                 await oauth2Client.revokeToken(refreshToken);
                 logger_1.default.info(`Google token revoked for email: ${email}`);

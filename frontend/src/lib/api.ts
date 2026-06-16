@@ -1,4 +1,16 @@
-export const API_BASE_URL = 'http://localhost:5000/api/v1';
+const getApiBaseUrl = () => {
+  const metaEnv = (import.meta as any).env;
+  if (metaEnv && metaEnv.VITE_API_URL) {
+    return metaEnv.VITE_API_URL;
+  }
+  const { protocol, hostname, port } = window.location;
+  if (port === '5173' || port === '3000') {
+    return `${protocol}//${hostname}:5000/api/v1`;
+  }
+  return `${protocol}//${hostname}${port ? `:${port}` : ''}/api/v1`;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export async function apiRequest<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('accessToken');

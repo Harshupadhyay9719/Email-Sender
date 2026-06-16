@@ -88,7 +88,7 @@ export async function sendCampaignEmailDirectly(
       provider: 'google',
     });
 
-    if (!connectedAccount) {
+    if (!connectedAccount || !connectedAccount.email) {
       throw new Error(`No connected Gmail account found for user ${campaign.createdBy}`);
     }
 

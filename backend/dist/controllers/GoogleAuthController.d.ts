@@ -6,6 +6,11 @@ export declare class GoogleAuthController {
      */
     static redirectToGoogle(req: Request, res: Response, next: NextFunction): void;
     /**
+     * POST /auth/google/initiate
+     * Initiate Google OAuth flow by saving custom client ID/secret and generating Auth URL
+     */
+    static initiateGoogleAuth(req: Request, res: Response, next: NextFunction): Promise<void>;
+    /**
      * GET /auth/google/callback
      * Handle redirect from Google OAuth consent screen
      */

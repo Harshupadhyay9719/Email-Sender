@@ -48,7 +48,17 @@ class ExpressServer {
         this.app.use(express_1.default.urlencoded({ limit: '50mb', extended: true }));
         // CORS middleware
         this.app.use((0, cors_1.default)({
-            origin: env_1.default.cors_origin,
+            origin: (origin, callback) => {
+                if (!origin)
+                    return callback(null, true);
+                if (env_1.default.node_env === 'development') {
+                    return callback(null, true);
+                }
+                if (env_1.default.cors_origin.indexOf(origin) !== -1 || env_1.default.cors_origin.includes('*')) {
+                    return callback(null, true);
+                }
+                callback(new Error('Not allowed by CORS'));
+            },
             credentials: true,
             optionsSuccessStatus: 200,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

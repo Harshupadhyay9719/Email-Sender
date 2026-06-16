@@ -13,6 +13,7 @@ router.post('/register', AuthController_1.AuthController.register);
 router.post('/login', AuthController_1.AuthController.login);
 router.post('/refresh', AuthController_1.AuthController.refresh);
 // Google OAuth Redirect and Callback
+router.post('/google/initiate', auth_1.authenticate, GoogleAuthController_1.GoogleAuthController.initiateGoogleAuth);
 router.get('/google', GoogleAuthController_1.GoogleAuthController.redirectToGoogle);
 router.get('/google/callback', GoogleAuthController_1.GoogleAuthController.handleCallback);
 // Protected routes

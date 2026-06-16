@@ -9,6 +9,7 @@ const GmailService_1 = __importDefault(require("../services/email/GmailService")
 const index_1 = require("../models/index");
 const responseHandler_1 = require("../utils/responseHandler");
 const errors_1 = require("../utils/errors");
+const encryption_1 = require("../utils/encryption");
 const logger_1 = __importDefault(require("../utils/logger"));
 class GoogleAuthController {
     /**
@@ -29,6 +30,47 @@ class GoogleAuthController {
         }
         catch (error) {
             logger_1.default.error('Error redirecting to Google OAuth:', error);
+            next(error);
+        }
+    }
+    /**
+     * POST /auth/google/initiate
+     * Initiate Google OAuth flow by saving custom client ID/secret and generating Auth URL
+     */
+    static async initiateGoogleAuth(req, res, next) {
+        try {
+            const userId = req.user?.userId;
+            if (!userId) {
+                throw new errors_1.AuthenticationError('User not authenticated');
+            }
+            const { clientId, clientSecret } = req.body;
+            if (!clientId || !clientSecret) {
+                throw new errors_1.ValidationError('Google Client ID and Client Secret are required');
+            }
+            // Find or create ConnectedAccount
+            let account = await index_1.ConnectedAccount.findOne({ userId, provider: 'google' });
+            if (!account) {
+                account = new index_1.ConnectedAccount({
+                    userId,
+                    provider: 'google',
+                });
+            }
+            // Encrypt and store keys
+            account.clientId = (0, encryption_1.encrypt)(clientId);
+            account.clientSecret = (0, encryption_1.encrypt)(clientSecret);
+            await account.save();
+            // Extract raw JWT token from Authorization header to pass as state parameter
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.split(' ')[1];
+            if (!token) {
+                throw new errors_1.AuthenticationError('Authorization token is missing');
+            }
+            // Generate the URL for the consent screen using custom credentials
+            const authUrl = GmailService_1.default.getAuthUrl(token, clientId, clientSecret);
+            responseHandler_1.ResponseHandler.success(res, 200, 'OAuth connection initiated successfully', { authUrl });
+        }
+        catch (error) {
+            logger_1.default.error('Error initiating Google OAuth:', error);
             next(error);
         }
     }
@@ -68,7 +110,7 @@ class GoogleAuthController {
                 throw new errors_1.AuthenticationError('User not authenticated');
             }
             const account = await index_1.ConnectedAccount.findOne({ userId, provider: 'google' });
-            if (account) {
+            if (account && account.email && account.refreshToken) {
                 responseHandler_1.ResponseHandler.success(res, 200, 'Connected account found', {
                     connected: true,
                     email: account.email,

@@ -243,7 +243,7 @@ export function ImportExcel() {
     if (!file) return;
     e.target.value = "";
     if (!canUpload) {
-      setErrorMsg("Please enter an organization name before uploading");
+      setErrorMsg("Please enter a slot name before uploading");
       setStep("error");
       return;
     }
@@ -272,8 +272,8 @@ export function ImportExcel() {
   };
 
   const strategyLabel = (s: ConfirmResult["strategy"]) => {
-    if (s === "create") return "Created new organization";
-    if (s === "merge") return "Merged into existing organization";
+    if (s === "create") return "Created new slot";
+    if (s === "merge") return "Merged into existing slot";
     return "Replaced all contacts";
   };
 
@@ -295,7 +295,7 @@ export function ImportExcel() {
             Import Contacts from Excel
           </CardTitle>
           <CardDescription className="text-slate-400">
-            Upload any Excel format — map columns to contact fields, then import into one organization.
+            Upload any Excel format — map columns to contact fields, then import into one slot.
           </CardDescription>
           <div className="pt-3">
             <Stepper current={step} />
@@ -306,10 +306,10 @@ export function ImportExcel() {
         {(step === "upload" || step === "error") && (
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="org-name" className="text-slate-300">Organization Name</Label>
+              <Label htmlFor="org-name" className="text-slate-300">Slot Name</Label>
               <Input
                 id="org-name"
-                placeholder="e.g. ABC Logistics"
+                placeholder="e.g. June Outreach Slot"
                 value={organizationName}
                 onChange={(e) => setOrganizationName(e.target.value)}
                 disabled={isBusy}
@@ -461,7 +461,7 @@ export function ImportExcel() {
               <div className="rounded-lg border border-amber-800/40 bg-amber-950/10 p-4 space-y-3">
                 <p className="text-sm font-semibold text-amber-400 flex items-center gap-1.5">
                   <AlertTriangle className="h-4 w-4" />
-                  Organization already exists. Choose how to import:
+                  Slot already exists. Choose how to import:
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {(["merge", "replace"] as DuplicateStrategy[]).map((s) => (
@@ -630,7 +630,7 @@ export function ImportExcel() {
               </div>
               <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 text-center">
                 <p className="text-3xl font-bold text-white">{confirmResult.organization.totalContacts}</p>
-                <p className="text-xs text-slate-500 mt-1">Total in Org</p>
+                <p className="text-xs text-slate-500 mt-1">Total in Slot</p>
               </div>
             </div>
 
@@ -639,7 +639,7 @@ export function ImportExcel() {
                 <Upload className="h-4 w-4" /> Import Another File
               </Button>
               <Button onClick={() => { window.location.href = "/organizations"; }} className="gap-2">
-                <Building2 className="h-4 w-4" /> View Organizations
+                <Building2 className="h-4 w-4" /> View Slots
               </Button>
             </div>
           </CardContent>

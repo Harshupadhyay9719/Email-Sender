@@ -254,10 +254,12 @@ export interface ConnectedAccountInterface {
     _id?: string;
     userId: string;
     provider: 'google';
-    email: string;
-    refreshToken: string;
+    email?: string;
+    refreshToken?: string;
     accessToken?: string;
     expiryDate?: number;
+    clientId?: string;
+    clientSecret?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }

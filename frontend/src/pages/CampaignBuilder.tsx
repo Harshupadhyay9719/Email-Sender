@@ -134,7 +134,7 @@ export function CampaignBuilder() {
     if (!subject.trim()) { setError("Email subject is required."); return; }
     if (!fromEmail.trim()) { setError("From email is required. Connect your Gmail in Settings first."); return; }
     if (!htmlBody.trim() || htmlBody === "<p></p>") { setError("Email body is required."); return; }
-    if (targetOrgs.length === 0) { setError("Select at least one target organization."); return; }
+    if (targetOrgs.length === 0) { setError("Select at least one target slot."); return; }
     if (!startDate) { setError("Start date is required."); return; }
 
     const payload = {
@@ -291,10 +291,10 @@ export function CampaignBuilder() {
 
           <div className="space-y-2">
             <Label htmlFor="targetOrgs">
-              Target Organizations <span className="text-red-400">*</span>
+              Target Slots <span className="text-red-400">*</span>
             </Label>
             {orgList.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">No organizations imported yet. <a href="/import" className="underline">Import from Excel</a> first.</p>
+              <p className="text-xs text-slate-400 italic">No slots imported yet. <a href="/import" className="underline">Import from Excel</a> first.</p>
             ) : (
               <div className="grid gap-2 max-h-48 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900/50 p-3">
                 {orgList.map((o: any) => (
@@ -320,7 +320,7 @@ export function CampaignBuilder() {
               </div>
             )}
             {targetOrgs.length > 0 && (
-              <p className="text-xs text-emerald-400">{targetOrgs.length} organization{targetOrgs.length !== 1 ? "s" : ""} selected</p>
+              <p className="text-xs text-emerald-400">{targetOrgs.length} slot{targetOrgs.length !== 1 ? "s" : ""} selected</p>
             )}
           </div>
 

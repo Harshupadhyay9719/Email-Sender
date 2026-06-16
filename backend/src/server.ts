@@ -55,7 +55,16 @@ class ExpressServer {
     // CORS middleware
     this.app.use(
       cors({
-        origin: config.cors_origin,
+        origin: (origin, callback) => {
+          if (!origin) return callback(null, true);
+          if (config.node_env === 'development') {
+            return callback(null, true);
+          }
+          if (config.cors_origin.indexOf(origin) !== -1 || config.cors_origin.includes('*')) {
+            return callback(null, true);
+          }
+          callback(new Error('Not allowed by CORS'));
+        },
         credentials: true,
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

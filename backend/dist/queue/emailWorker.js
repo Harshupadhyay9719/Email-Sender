@@ -78,7 +78,7 @@ async function sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade = 
             userId: campaign.createdBy,
             provider: 'google',
         });
-        if (!connectedAccount) {
+        if (!connectedAccount || !connectedAccount.email) {
             throw new Error(`No connected Gmail account found for user ${campaign.createdBy}`);
         }
         logger_1.default.info(`[Email Send Start] Sending log ${emailLogId} to ${emailLog.recipientEmail} via Gmail API (${connectedAccount.email})`);
