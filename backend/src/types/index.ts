@@ -129,6 +129,7 @@ export interface CampaignInterface {
     htmlBody: string;
     textBody?: string;
     from: string;
+    fromName?: string;
     replyTo: string;
     mergeFields: string[];
     signature?: string;

@@ -20,6 +20,9 @@ class OrgImportService {
     suggestMappings(columns) {
         return ColumnMappingService_1.default.suggestMappings(columns);
     }
+    getSampleValues(filePath) {
+        return ColumnMappingService_1.default.getSampleValues(filePath);
+    }
     parseWithMappings(filePath, mappings) {
         return ColumnMappingService_1.default.parseWithMappings(filePath, mappings);
     }

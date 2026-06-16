@@ -5,7 +5,7 @@
  * via setTimeout delays scheduled by CampaignService.launchCampaign().
  */
 
-import { Campaign, EmailLog, Organization, ConnectedAccount } from '../models/index';
+import { Campaign, EmailLog, Organization, ConnectedAccount, User } from '../models/index';
 import GmailService from '../services/email/GmailService';
 import { CampaignStatus, EmailStatus } from '../types/index';
 import logger from '../utils/logger';
@@ -92,17 +92,31 @@ export async function sendCampaignEmailDirectly(
       throw new Error(`No connected Gmail account found for user ${campaign.createdBy}`);
     }
 
-    logger.info(`[Email Send Start] Sending log ${emailLogId} to ${emailLog.recipientEmail} via Gmail API (${connectedAccount.email})`);
+    // Try to load user's name
+    let fromName = campaign.emailContent.fromName;
+    if (!fromName) {
+      const user = await User.findById(campaign.createdBy);
+      if (user) {
+        fromName = `${user.firstName} ${user.lastName}`.trim();
+      }
+    }
+
+    const fromHeader = fromName
+      ? `"${fromName.replace(/"/g, '\\"')}" <${connectedAccount.email}>`
+      : connectedAccount.email;
+
+    logger.info(`[Email Send Start] Sending log ${emailLogId} to ${emailLog.recipientEmail} via Gmail API (From: ${fromHeader})`);
     const result = await GmailService.sendEmail(
       campaign.createdBy.toString(),
       connectedAccount.email,
       {
         to: emailLog.recipientEmail,
-        from: connectedAccount.email,
+        from: fromHeader,
         replyTo: campaign.emailContent.replyTo || connectedAccount.email,
         subject: emailLog.personalizedContent.subject,
         htmlBody: emailLog.personalizedContent.htmlBody,
         textBody: emailLog.personalizedContent.textBody,
+        attachments: campaign.attachments,
       }
     );
 

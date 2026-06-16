@@ -83,6 +83,8 @@ export class ImportController {
 
       await importLog.save();
 
+      const sampleValues = OrgImportService.getSampleValues(req.file.path);
+
       ResponseHandler.accepted(
         res,
         {
@@ -93,6 +95,7 @@ export class ImportController {
           columns,
           suggestedMappings,
           fieldOptions: ColumnMappingService.fieldOptions,
+          sampleValues,
         },
         'Columns extracted successfully'
       );

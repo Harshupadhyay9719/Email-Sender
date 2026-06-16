@@ -17,8 +17,8 @@ export class CampaignController {
    */
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { campaignName, description, emailContent, config } = req.body;
-
+      const { campaignName, description, emailContent, config, attachments } = req.body;
+      
       // Validate required fields
       if (!campaignName) {
         throw new ValidationError('Campaign name is required');
@@ -41,6 +41,7 @@ export class CampaignController {
         description,
         emailContent,
         config,
+        attachments,
       });
 
       ResponseHandler.created(res, campaign, 'Campaign created successfully');
@@ -105,13 +106,14 @@ export class CampaignController {
    */
   static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { campaignName, description, emailContent, config } = req.body;
+      const { campaignName, description, emailContent, config, attachments } = req.body;
 
       const campaign = await CampaignService.updateCampaign(req.params.id, {
         campaignName,
         description,
         emailContent,
         config,
+        attachments,
       });
 
       ResponseHandler.success(res, 200, 'Campaign updated', campaign);

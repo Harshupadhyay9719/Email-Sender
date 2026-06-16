@@ -116,6 +116,21 @@ class ColumnMappingService {
     return columns;
   }
 
+  getSampleValues(filePath: string): Record<string, string[]> {
+    const sheet = this.readFirstSheet(filePath);
+    const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: '', blankrows: false });
+    const samples: Record<string, string[]> = {};
+    if (rows.length === 0) return samples;
+
+    const firstThree = rows.slice(0, 3);
+    const headers = Object.keys(rows[0]);
+    for (const header of headers) {
+      const trimmedHeader = header.trim();
+      samples[trimmedHeader] = firstThree.map(row => String(row[header] ?? '').trim()).filter(Boolean);
+    }
+    return samples;
+  }
+
   suggestMappings(columns: string[]): SuggestedMapping[] {
     const usedFields = new Set<MappableField>();
     const suggestions: SuggestedMapping[] = [];

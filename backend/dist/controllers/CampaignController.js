@@ -20,7 +20,7 @@ class CampaignController {
      */
     static async create(req, res, next) {
         try {
-            const { campaignName, description, emailContent, config } = req.body;
+            const { campaignName, description, emailContent, config, attachments } = req.body;
             // Validate required fields
             if (!campaignName) {
                 throw new errors_1.ValidationError('Campaign name is required');
@@ -39,6 +39,7 @@ class CampaignController {
                 description,
                 emailContent,
                 config,
+                attachments,
             });
             responseHandler_1.ResponseHandler.created(res, campaign, 'Campaign created successfully');
         }
@@ -93,12 +94,13 @@ class CampaignController {
      */
     static async update(req, res, next) {
         try {
-            const { campaignName, description, emailContent, config } = req.body;
+            const { campaignName, description, emailContent, config, attachments } = req.body;
             const campaign = await CampaignService_1.default.updateCampaign(req.params.id, {
                 campaignName,
                 description,
                 emailContent,
                 config,
+                attachments,
             });
             responseHandler_1.ResponseHandler.success(res, 200, 'Campaign updated', campaign);
         }

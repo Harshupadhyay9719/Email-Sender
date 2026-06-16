@@ -243,6 +243,7 @@ const campaignSchema = new mongoose_1.Schema({
             type: String,
             required: true,
         },
+        fromName: String,
         replyTo: String,
         mergeFields: [String],
         signature: String,

@@ -77,6 +77,7 @@ class ImportController {
                 },
             });
             await importLog.save();
+            const sampleValues = OrgImportService_1.default.getSampleValues(req.file.path);
             responseHandler_1.ResponseHandler.accepted(res, {
                 importId: importLog._id,
                 organizationName,
@@ -85,6 +86,7 @@ class ImportController {
                 columns,
                 suggestedMappings,
                 fieldOptions: ColumnMappingService_1.default.fieldOptions,
+                sampleValues,
             }, 'Columns extracted successfully');
         }
         catch (error) {

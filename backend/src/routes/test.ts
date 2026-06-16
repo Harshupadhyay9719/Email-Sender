@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { ConnectedAccount } from '../models/index';
+import { ConnectedAccount, User } from '../models/index';
 import GmailService from '../services/email/GmailService';
 import AuthService from '../services/auth/AuthService';
 import logger from '../utils/logger';
@@ -58,12 +58,19 @@ router.post('/gmail-send', async (req: Request, res: Response) => {
 
     logger.info(`[TestGmailSend] Sending test email to ${to} via connected Gmail account: ${connectedAccount.email}`);
 
+    // Try to load user's name
+    const user = await User.findById(connectedAccount.userId);
+    const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
+    const fromHeader = displayName
+      ? `"${displayName.replace(/"/g, '\\"')}" <${connectedAccount.email}>`
+      : connectedAccount.email;
+
     const result = await GmailService.sendEmail(
       connectedAccount.userId.toString(),
       connectedAccount.email,
       {
         to,
-        from: connectedAccount.email,
+        from: fromHeader,
         subject: 'Test Email via Gmail API',
         htmlBody: `<h3>Hello!</h3><p>This is a test email sent from the connected Gmail account <b>${connectedAccount.email}</b> using the Gmail API integration.</p>`,
         textBody: `Hello! This is a test email sent from the connected Gmail account ${connectedAccount.email} using the Gmail API integration.`,

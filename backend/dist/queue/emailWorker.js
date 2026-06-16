@@ -81,14 +81,26 @@ async function sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade = 
         if (!connectedAccount || !connectedAccount.email) {
             throw new Error(`No connected Gmail account found for user ${campaign.createdBy}`);
         }
-        logger_1.default.info(`[Email Send Start] Sending log ${emailLogId} to ${emailLog.recipientEmail} via Gmail API (${connectedAccount.email})`);
+        // Try to load user's name
+        let fromName = campaign.emailContent.fromName;
+        if (!fromName) {
+            const user = await index_1.User.findById(campaign.createdBy);
+            if (user) {
+                fromName = `${user.firstName} ${user.lastName}`.trim();
+            }
+        }
+        const fromHeader = fromName
+            ? `"${fromName.replace(/"/g, '\\"')}" <${connectedAccount.email}>`
+            : connectedAccount.email;
+        logger_1.default.info(`[Email Send Start] Sending log ${emailLogId} to ${emailLog.recipientEmail} via Gmail API (From: ${fromHeader})`);
         const result = await GmailService_1.default.sendEmail(campaign.createdBy.toString(), connectedAccount.email, {
             to: emailLog.recipientEmail,
-            from: connectedAccount.email,
+            from: fromHeader,
             replyTo: campaign.emailContent.replyTo || connectedAccount.email,
             subject: emailLog.personalizedContent.subject,
             htmlBody: emailLog.personalizedContent.htmlBody,
             textBody: emailLog.personalizedContent.textBody,
+            attachments: campaign.attachments,
         });
         logger_1.default.info(`[Email Send Success] Sent log ${emailLogId} successfully. MessageId: ${result.gmailMessageId}, ThreadId: ${result.threadId}`);
         emailLog.status = index_2.EmailStatus.SENT;

@@ -54,21 +54,21 @@ function CampaignCard({ campaign, onAction }: { campaign: any; onAction: (action
   const progress = total > 0 ? Math.round((sent / total) * 100) : 0;
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardContent className="p-4">
+    <Card className="bg-gradient-to-br from-white via-white to-slate-50/60 border border-slate-200 shadow-md shadow-slate-100/50 hover:shadow-lg hover:border-primary/30 transition-all duration-200 rounded-2xl overflow-hidden">
+      <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Mail className="h-4 w-4 text-primary" />
+            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
+              <Mail className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">{displayName}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground truncate">{displaySubject}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <p className="font-bold text-slate-800 text-sm truncate">{displayName}</p>
+              <p className="mt-0.5 text-xs text-slate-500 font-medium truncate">{displaySubject}</p>
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <StatusBadge status={displayStatus} />
                 {campaign.config?.sendingConfig?.startDate && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
+                  <span className="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5 text-slate-400" />
                     {new Date(campaign.config.sendingConfig.startDate).toLocaleString()}
                   </span>
                 )}
@@ -77,8 +77,8 @@ function CampaignCard({ campaign, onAction }: { campaign: any; onAction: (action
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-850 shadow-sm rounded-lg transition-colors">
+                <MoreHorizontal className="h-4 w-4 text-slate-700 dark:text-slate-300" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -102,7 +102,7 @@ function CampaignCard({ campaign, onAction }: { campaign: any; onAction: (action
               ) : null}
               {campaign.config?.status === "Sending" && (
                 <DropdownMenuItem onClick={() => onAction("cancel", campaign._id)}>
-                  <StopCircle className="h-4 w-4 mr-2 text-red-600" />Cancel
+                  <StopCircle className="h-4 w-4 mr-2 text-red-650" />Cancel
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={() => onAction("exportLogs", campaign._id)}>
@@ -117,28 +117,28 @@ function CampaignCard({ campaign, onAction }: { campaign: any; onAction: (action
         </div>
 
         {/* Stats row */}
-        <div className="mt-4 grid grid-cols-4 gap-3 rounded-lg bg-muted/40 px-3 py-2 text-center text-xs">
+        <div className="mt-4 grid grid-cols-4 gap-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 px-3 py-2.5 text-center text-xs shadow-sm shadow-slate-100">
           <div>
-            <p className="font-semibold text-foreground">{(stats.emailsSent ?? stats.sent ?? 0).toLocaleString()}</p>
-            <p className="text-muted-foreground">Sent</p>
+            <p className="font-extrabold text-slate-800 dark:text-slate-200">{(stats.emailsSent ?? stats.sent ?? 0).toLocaleString()}</p>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-0.5">Sent</p>
           </div>
           <div>
-            <p className="font-semibold text-amber-600">{(stats.emailsOpened ?? stats.opened ?? 0).toLocaleString()}</p>
-            <p className="text-muted-foreground">Opened</p>
+            <p className="font-extrabold text-amber-700 dark:text-amber-400">{(stats.emailsOpened ?? stats.opened ?? 0).toLocaleString()}</p>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-0.5">Opened</p>
           </div>
           <div>
-            <p className="font-semibold text-indigo-600">{(stats.emailsClicked ?? stats.clicked ?? 0).toLocaleString()}</p>
-            <p className="text-muted-foreground">Clicked</p>
+            <p className="font-extrabold text-indigo-700 dark:text-indigo-400">{(stats.emailsClicked ?? stats.clicked ?? 0).toLocaleString()}</p>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-0.5">Clicked</p>
           </div>
           <div>
-            <p className="font-semibold text-red-500">{(stats.emailsFailed ?? stats.failed ?? 0).toLocaleString()}</p>
-            <p className="text-muted-foreground">Failed</p>
+            <p className="font-extrabold text-red-650 dark:text-red-400">{(stats.emailsFailed ?? stats.failed ?? 0).toLocaleString()}</p>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mt-0.5">Failed</p>
           </div>
         </div>
 
         {total > 0 && (
-          <div className="mt-3 space-y-1">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-3.5 space-y-1">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
               <span>Progress</span><span>{progress}%</span>
             </div>
             <Progress value={progress} className="h-1.5" />

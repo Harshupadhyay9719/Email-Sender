@@ -7,6 +7,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { v4 as uuid } from 'uuid';
+import path from 'path';
 import config from './config/env';
 import Database from './config/database';
 import routes from './routes/index';
@@ -91,6 +92,9 @@ class ExpressServer {
   private setupRoutes(): void {
     const apiPrefix = `/api/${config.api_version}`;
     this.app.use(apiPrefix, routes);
+
+    // Serve uploads static folder
+    this.app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
     // Root path handler
     this.app.get('/', (req: Request, res: Response) => {

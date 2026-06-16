@@ -56,9 +56,15 @@ router.post('/gmail-send', async (req, res) => {
             });
         }
         logger_1.default.info(`[TestGmailSend] Sending test email to ${to} via connected Gmail account: ${connectedAccount.email}`);
+        // Try to load user's name
+        const user = await index_1.User.findById(connectedAccount.userId);
+        const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
+        const fromHeader = displayName
+            ? `"${displayName.replace(/"/g, '\\"')}" <${connectedAccount.email}>`
+            : connectedAccount.email;
         const result = await GmailService_1.default.sendEmail(connectedAccount.userId.toString(), connectedAccount.email, {
             to,
-            from: connectedAccount.email,
+            from: fromHeader,
             subject: 'Test Email via Gmail API',
             htmlBody: `<h3>Hello!</h3><p>This is a test email sent from the connected Gmail account <b>${connectedAccount.email}</b> using the Gmail API integration.</p>`,
             textBody: `Hello! This is a test email sent from the connected Gmail account ${connectedAccount.email} using the Gmail API integration.`,

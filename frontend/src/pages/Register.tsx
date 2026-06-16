@@ -77,12 +77,12 @@ export function Register() {
       {/* Left Column: Form Panel (span 5) */}
       <div className="lg:col-span-5 flex flex-col justify-center px-6 py-12 sm:px-12 xl:px-16 bg-white border-r border-slate-200/80 relative overflow-hidden shadow-sm">
         {/* Soft Decorative Ambient Glows */}
-        <div className="absolute top-0 left-0 w-80 h-80 bg-indigo-200/20 rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" />
+        <div className="absolute top-0 left-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-85 h-85 bg-cyan-200/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
         <div className="mx-auto w-full max-w-md space-y-8 relative z-10">
           <div className="flex flex-col items-start">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-600/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-cyan-500 text-white shadow-md shadow-primary/10">
               <Send className="h-5.5 w-5.5" />
             </div>
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900">
@@ -118,7 +118,7 @@ export function Register() {
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="Rahul"
                     required
-                    className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-455 focus:border-indigo-500 focus:ring-indigo-550/15 rounded-lg"
+                    className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary/15 rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -131,7 +131,7 @@ export function Register() {
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Sharma"
                     required
-                    className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-455 focus:border-indigo-500 focus:ring-indigo-550/15 rounded-lg"
+                    className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary/15 rounded-lg"
                   />
                 </div>
               </div>
@@ -147,7 +147,7 @@ export function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
                   required
-                  className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-455 focus:border-indigo-500 focus:ring-indigo-550/15 rounded-lg"
+                  className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary/15 rounded-lg"
                 />
               </div>
 
@@ -163,7 +163,7 @@ export function Register() {
                   placeholder="Min. 8 characters"
                   required
                   minLength={8}
-                  className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-455 focus:border-indigo-500 focus:ring-indigo-550/15 rounded-lg"
+                  className="h-10 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-primary/15 rounded-lg"
                 />
               </div>
 
@@ -199,7 +199,7 @@ export function Register() {
                     alt="reCAPTCHA logo"
                     className="h-7 w-7"
                   />
-                  <span className="text-[9px] text-slate-400 mt-0.5 select-none font-medium">Privacy - Terms</span>
+                  <span className="text-xs text-slate-505 mt-0.5 select-none font-medium">Privacy - Terms</span>
                 </div>
               </div>
 
@@ -207,7 +207,7 @@ export function Register() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-10 bg-indigo-600 hover:bg-indigo-550 text-white shadow-lg shadow-indigo-600/15 transition-all duration-200 font-semibold rounded-lg"
+                  className="w-full h-10 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/15 transition-all duration-200 font-semibold rounded-lg"
                 >
                   {isLoading ? (
                     <>
@@ -222,7 +222,7 @@ export function Register() {
 
               <div className="text-center text-xs text-slate-500 mt-4">
                 Already have an account?{' '}
-                <Link to="/login" className="font-bold text-indigo-600 hover:text-indigo-500 hover:underline transition-all duration-150">
+                <Link to="/login" className="font-bold text-primary hover:text-primary/80 hover:underline transition-all duration-150">
                   Sign in
                 </Link>
               </div>
@@ -234,15 +234,15 @@ export function Register() {
       {/* Right Column: Visual Showcase (span 7) */}
       <div className="hidden lg:col-span-7 lg:flex flex-col justify-between p-12 bg-slate-50/50 relative overflow-hidden">
         {/* Soft Blur Glows */}
-        <div className="absolute top-1/4 right-10 w-96 h-96 bg-indigo-200/30 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-cyan-200/30 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 right-10 w-96 h-96 bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-1/4 left-10 w-96 h-96 bg-cyan-200/10 rounded-full blur-[140px] pointer-events-none" />
 
         {/* Top Info Header */}
         <div className="relative z-10 flex items-center justify-between">
-          <span className="text-xs font-bold tracking-widest text-slate-400 uppercase">Enterprise Outreach Platform</span>
+          <span className="text-xs font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase">ApexReach Enterprise</span>
           <div className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-slate-500 font-semibold">Systems Online</span>
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Systems Online</span>
           </div>
         </div>
 
@@ -261,9 +261,9 @@ export function Register() {
             <div>
               <div className="flex items-center gap-1.5">
                 <h4 className="text-sm font-bold text-slate-800">Native Gmail OAuth Integration</h4>
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[9px] hover:bg-emerald-50">Verified API</Badge>
+                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 text-xs hover:bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800">Verified API</Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-1 leading-normal font-medium">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-normal font-medium">
                 Log in and securely connect your G-Suite work accounts. Alternates sends dynamically across multiple inboxes to maximize delivery rate.
               </p>
             </div>
@@ -276,7 +276,7 @@ export function Register() {
                 <ShieldCheck className="h-4 w-4 text-emerald-500" />
                 <span className="text-xs font-bold text-slate-800">Deliverability Engine</span>
               </div>
-              <p className="mt-1 text-[10.5px] text-slate-500 font-medium leading-normal">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium leading-normal">
                 Multi-inbox rotation sends outreach cleanly with high reputation mapping.
               </p>
             </div>
@@ -307,19 +307,19 @@ export function Register() {
               <div className="mt-3 px-1.5 flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-800">Campaign Distribution Hub</h4>
-                  <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Live monitoring of campaign performance</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Live monitoring of campaign performance</p>
                 </div>
-                <Badge className="bg-indigo-50 text-indigo-700 border-indigo-100 text-[10px] font-bold">Active</Badge>
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold dark:bg-primary/20">Active</Badge>
               </div>
             </div>
 
             {/* Lower Left Floating Card */}
-            <div className="absolute -left-12 -bottom-16 z-30 w-48 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-delayed">
+            <div className="absolute -left-12 -bottom-16 z-30 w-48 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-delayed dark:border-slate-800 dark:bg-slate-950/95">
               <div className="flex items-center gap-1.5">
-                <Zap className="h-4 w-4 text-indigo-500" />
-                <span className="text-xs font-bold text-slate-800">Real-Time Metrics</span>
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold text-slate-800 dark:text-white">Real-Time Metrics</span>
               </div>
-              <p className="mt-1 text-[10.5px] text-slate-500 font-medium leading-normal">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium leading-normal">
                 Instant delivery statistics and open rate alerts direct from Gmail API.
               </p>
             </div>
@@ -327,9 +327,9 @@ export function Register() {
         </div>
 
         {/* Footer info */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-slate-400 font-semibold">
+        <div className="relative z-10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold">
           <span>Secure AES-256 Auth</span>
-          <span>© 2026 Outreach Platforms, Inc.</span>
+          <span>© 2026 ApexReach, Inc.</span>
         </div>
       </div>
     </div>

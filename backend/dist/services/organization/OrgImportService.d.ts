@@ -24,6 +24,7 @@ export interface OrgImportConfirmResult {
 declare class OrgImportService {
     extractColumns(filePath: string): string[];
     suggestMappings(columns: string[]): SuggestedMapping[];
+    getSampleValues(filePath: string): Record<string, string[]>;
     parseWithMappings(filePath: string, mappings: ColumnMapping[]): MappedParseResult;
     checkOrgExists(userId: string, orgName: string): Promise<OrgExistsResult>;
     confirmImport(userId: string, orgName: string, filePath: string, mappings: ColumnMapping[], strategy: DuplicateStrategy | null, importLogId: string): Promise<OrgImportConfirmResult>;

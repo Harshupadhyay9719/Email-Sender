@@ -92,6 +92,20 @@ class ColumnMappingService {
             throw new errors_1.ValidationError('Excel file has no column headers');
         return columns;
     }
+    getSampleValues(filePath) {
+        const sheet = this.readFirstSheet(filePath);
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', blankrows: false });
+        const samples = {};
+        if (rows.length === 0)
+            return samples;
+        const firstThree = rows.slice(0, 3);
+        const headers = Object.keys(rows[0]);
+        for (const header of headers) {
+            const trimmedHeader = header.trim();
+            samples[trimmedHeader] = firstThree.map(row => String(row[header] ?? '').trim()).filter(Boolean);
+        }
+        return samples;
+    }
     suggestMappings(columns) {
         const usedFields = new Set();
         const suggestions = [];

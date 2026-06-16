@@ -225,6 +225,7 @@ const campaignSchema = new Schema<any>(
         type: String,
         required: true,
       },
+      fromName: String,
       replyTo: String,
       mergeFields: [String],
       signature: String,

@@ -19,15 +19,17 @@ const PIE_COLORS: Record<string, string> = {
 
 function StatCard({ label, value, change, icon: Icon, positive }: any) {
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-white via-white to-primary/5 border-slate-200 shadow-md shadow-slate-100 hover:shadow-lg hover:border-primary/30 transition-all duration-200">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardDescription className="text-sm font-medium">{label}</CardDescription>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardDescription className="text-sm font-semibold text-slate-500">{label}</CardDescription>
+        <div className="p-1 rounded-lg bg-primary/5 text-primary">
+          <Icon className="h-4.5 w-4.5 shrink-0" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-black text-slate-800 tracking-tight">{value}</div>
         {change !== undefined && (
-          <div className={`mt-1 flex items-center gap-1 text-xs ${positive ? "text-emerald-600" : "text-red-500"}`}>
+          <div className={`mt-1 flex items-center gap-1 text-xs font-bold ${positive ? "text-emerald-600" : "text-red-500"}`}>
             {positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
             {change}
           </div>

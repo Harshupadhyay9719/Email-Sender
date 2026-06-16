@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft, Save, Loader2, AlertTriangle, Info, Timer, Zap, Clock, Gauge,
+  Paperclip, Trash2, File,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,14 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { apiRequest } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export function CampaignBuilder() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // ── Form state ──────────────────────────────────────────────
   const [campaignName, setCampaignName] = useState("");
@@ -26,9 +29,12 @@ export function CampaignBuilder() {
 
   // emailContent fields
   const [subject, setSubject] = useState("");
+  const [fromName, setFromName] = useState("");
   const [fromEmail, setFromEmail] = useState("");
   const [replyTo, setReplyTo] = useState("");
   const [htmlBody, setHtmlBody] = useState("<p>Hello {{contact_name}},</p>");
+  const [attachments, setAttachments] = useState<any[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   // config fields
   const [targetOrgs, setTargetOrgs] = useState<string[]>([]);
@@ -95,6 +101,7 @@ export function CampaignBuilder() {
       setCampaignName(campaignData.campaignName ?? "");
       setDescription(campaignData.description ?? "");
       setSubject(campaignData.emailContent?.subject ?? "");
+      setFromName(campaignData.emailContent?.fromName ?? "");
       setFromEmail(campaignData.emailContent?.from ?? "");
       setReplyTo(campaignData.emailContent?.replyTo ?? "");
       setHtmlBody(campaignData.emailContent?.htmlBody ?? "");
@@ -107,8 +114,15 @@ export function CampaignBuilder() {
       setDailyLimit(campaignData.config?.sendingConfig?.dailySendLimit ?? 500);
       setMinDelay(campaignData.config?.sendingConfig?.minimumDelaySeconds ?? 30);
       setMaxDelay(campaignData.config?.sendingConfig?.maximumDelaySeconds ?? 90);
+      setAttachments(campaignData.attachments ?? []);
     }
   }, [campaignData, isEdit]);
+
+  useEffect(() => {
+    if (!isEdit && user && !fromName) {
+      setFromName(`${user.firstName} ${user.lastName}`.trim());
+    }
+  }, [user, isEdit, fromName]);
 
   // ── Save / Update mutation ───────────────────────────────────
   const saveMutation = useMutation({
@@ -125,6 +139,54 @@ export function CampaignBuilder() {
       setError(err.message || "Failed to save campaign");
     },
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setUploadingFile(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const token = localStorage.getItem("accessToken");
+      const base = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:5000/api/v1";
+      const res = await fetch(`${base}/campaigns/upload-attachment`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Upload failed");
+      }
+
+      setAttachments(prev => [...prev, data.file]);
+    } catch (err: any) {
+      setError(err.message || "Failed to upload file");
+    } finally {
+      setUploadingFile(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  };
 
   const handleSave = () => {
     setError(null);
@@ -145,8 +207,10 @@ export function CampaignBuilder() {
         htmlBody,
         textBody: htmlBody.replace(/<[^>]+>/g, ""),
         from: fromEmail.trim(),
+        fromName: fromName.trim() || undefined,
         replyTo: replyTo.trim() || undefined,
       },
+      attachments,
       config: {
         targetOrganizations: targetOrgs,
         sendingConfig: {
@@ -174,7 +238,7 @@ export function CampaignBuilder() {
 
   return (
     <div className="page-shell max-w-4xl mx-auto">
-      <Card className="border-slate-800 bg-slate-950/80 backdrop-blur">
+      <Card className="border-slate-200 bg-white shadow-xl shadow-slate-100/40 rounded-2xl dark:border-slate-800 dark:bg-slate-950/80 dark:shadow-none">
         <CardHeader className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/campaigns")} className="h-8 w-8">
@@ -191,19 +255,19 @@ export function CampaignBuilder() {
 
           {/* Error banner */}
           {error && (
-            <div className="flex items-start gap-3 rounded-lg border border-red-800/40 bg-red-950/20 p-4 text-sm text-red-300">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+            <div className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive dark:border-red-800/40 dark:bg-red-950/20 dark:text-red-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive dark:text-red-400" />
               <p>{error}</p>
             </div>
           )}
 
           {/* Gmail tip */}
           {!connectedEmail && (
-            <div className="flex items-start gap-3 rounded-lg border border-amber-800/30 bg-amber-950/10 p-3 text-xs text-amber-300">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50/50 dark:border-amber-800/30 dark:bg-amber-950/10 p-3 text-xs text-amber-800 dark:text-amber-300">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <p>
                 You haven't connected a Gmail account yet.{" "}
-                <a href="/settings" className="underline font-semibold">Go to Settings</a> and connect Gmail
+                <a href="/settings" className="underline font-semibold text-primary hover:text-primary/80">Go to Settings</a> and connect Gmail
                 before creating a campaign, then enter your Gmail address in the "From Email" field below.
               </p>
             </div>
@@ -235,16 +299,26 @@ export function CampaignBuilder() {
 
           {/* ── Email Content ── */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-white">Email Content</p>
-            <p className="text-xs text-slate-400">Use <code className="bg-slate-800 px-1 py-0.5 rounded">{"{{contact_name}}"}</code>, <code className="bg-slate-800 px-1 py-0.5 rounded">{"{{company_name}}"}</code> as merge fields.</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-white">Email Content</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Use <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[11px] text-slate-700 dark:text-slate-200">{"{{contact_name}}"}</code>, <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[11px] text-slate-700 dark:text-slate-200">{"{{company_name}}"}</code> as merge fields.</p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="fromEmail">
-                From Email <span className="text-red-400">*</span>
+              <Label htmlFor="fromName" className="text-slate-700 dark:text-slate-250">Sender Name</Label>
+              <Input
+                id="fromName"
+                placeholder="e.g. John Doe (optional)"
+                value={fromName}
+                onChange={e => setFromName(e.target.value)}
+                className="bg-white border-slate-250 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fromEmail" className="text-slate-700 dark:text-slate-250">
+                From Email <span className="text-destructive font-bold">*</span>
                 {connectedEmail && (
-                  <span className="ml-2 text-xs text-emerald-400">(Connected: {connectedEmail})</span>
+                  <span className="ml-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">(Connected: {connectedEmail})</span>
                 )}
               </Label>
               <Input
@@ -253,55 +327,135 @@ export function CampaignBuilder() {
                 placeholder="you@gmail.com"
                 value={fromEmail}
                 onChange={e => setFromEmail(e.target.value)}
+                className="bg-white border-slate-250 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="replyTo">Reply-To Email</Label>
+              <Label htmlFor="replyTo" className="text-slate-700 dark:text-slate-250">Reply-To Email</Label>
               <Input
                 id="replyTo"
                 type="email"
                 placeholder="replies@company.com (optional)"
                 value={replyTo}
                 onChange={e => setReplyTo(e.target.value)}
+                className="bg-white border-slate-250 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="subject">Email Subject <span className="text-red-400">*</span></Label>
+            <Label htmlFor="subject" className="text-slate-700 dark:text-slate-250">Email Subject <span className="text-destructive font-bold">*</span></Label>
             <Input
               id="subject"
               placeholder="Introducing our solution to {{company_name}}"
               value={subject}
               onChange={e => setSubject(e.target.value)}
+              className="bg-white border-slate-250 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Email Body <span className="text-red-400">*</span></Label>
-            <TipTapEditor content={htmlBody} onChange={setHtmlBody} />
+            <Label className="text-slate-700 dark:text-slate-250">Email Body <span className="text-destructive font-bold">*</span></Label>
+            <TipTapEditor content={htmlBody} onChange={setHtmlBody} className="border-slate-250 dark:border-slate-800" />
           </div>
 
-          <Separator />
+          {/* Attachments Section */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <Label className="text-slate-700 dark:text-slate-250 flex items-center gap-1.5 font-bold">
+                <Paperclip className="h-4 w-4" />
+                Attachments
+              </Label>
+              <div className="relative">
+                <input
+                  type="file"
+                  id="attachment-upload"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  disabled={uploadingFile}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-8 border-slate-250 text-slate-700 hover:text-slate-900 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800"
+                  disabled={uploadingFile}
+                  onClick={() => document.getElementById("attachment-upload")?.click()}
+                >
+                  {uploadingFile ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Paperclip className="h-3.5 w-3.5" />
+                      Add File
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {attachments.length > 0 ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {attachments.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/30 shadow-sm transition-shadow hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
+                        <File className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={file.fileName}>
+                          {file.fileName}
+                        </p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase mt-0.5">
+                          {formatBytes(file.fileSize)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 shrink-0 rounded-lg transition-colors"
+                      onClick={() => removeAttachment(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-450 dark:text-slate-500 italic py-1 pl-0.5">
+                No files attached yet. (PDFs, images, CSVs, slides, or documents up to 10MB)
+              </p>
+            )}
+          </div>
+
+          <Separator className="bg-slate-200 dark:bg-slate-800" />
 
           {/* ── Targeting ── */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-white">Targeting</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-white">Targeting</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="targetOrgs">
-              Target Slots <span className="text-red-400">*</span>
+            <Label htmlFor="targetOrgs" className="text-slate-700 dark:text-slate-250">
+              Target Slots <span className="text-destructive font-bold">*</span>
             </Label>
             {orgList.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">No slots imported yet. <a href="/import" className="underline">Import from Excel</a> first.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic">No slots imported yet. <a href="/import" className="underline text-primary hover:text-primary/80">Import from Excel</a> first.</p>
             ) : (
-              <div className="grid gap-2 max-h-48 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900/50 p-3">
+              <div className="grid gap-2 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30 p-3">
                 {orgList.map((o: any) => (
-                  <label key={o._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/50 rounded px-2 py-1.5 transition-colors">
+                  <label key={o._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 rounded px-2 py-1.5 transition-colors">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-primary"
+                      className="h-4 w-4 accent-primary rounded border-slate-300 dark:border-slate-800 text-primary focus:ring-primary"
                       checked={targetOrgs.includes(o._id)}
                       onChange={e => {
                         if (e.target.checked) {
@@ -311,24 +465,24 @@ export function CampaignBuilder() {
                         }
                       }}
                     />
-                    <span className="text-sm text-slate-200">{o.companyName}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">{o.companyName}</span>
                     {o.organizationStatus?.totalContacts > 0 && (
-                      <span className="ml-auto text-xs text-slate-500">{o.organizationStatus.totalContacts} contacts</span>
+                      <span className="ml-auto text-xs text-slate-500 dark:text-slate-400 font-semibold">{o.organizationStatus.totalContacts} contacts</span>
                     )}
                   </label>
                 ))}
               </div>
             )}
             {targetOrgs.length > 0 && (
-              <p className="text-xs text-emerald-400">{targetOrgs.length} slot{targetOrgs.length !== 1 ? "s" : ""} selected</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{targetOrgs.length} slot{targetOrgs.length !== 1 ? "s" : ""} selected</p>
             )}
           </div>
 
-          <Separator />
+          <Separator className="bg-slate-200 dark:bg-slate-800" />
 
           {/* ── Sending Configuration ── */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-white">Sending Configuration</p>
+            <p className="text-sm font-bold text-slate-800 dark:text-white">Sending Configuration</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -357,16 +511,16 @@ export function CampaignBuilder() {
           {/* ── Delay Presets ── */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Delay Between Emails</Label>
+              <Label className="text-sm font-bold text-slate-700 dark:text-slate-205">Delay Between Emails</Label>
               {/* Unit toggle */}
-              <div className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900 p-0.5 text-xs">
+              <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 p-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => setDelayUnit("seconds")}
                   className={`rounded px-2.5 py-1 transition-colors ${
                     delayUnit === "seconds"
-                      ? "bg-primary text-white"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-primary text-white font-bold"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
                   seconds
@@ -376,8 +530,8 @@ export function CampaignBuilder() {
                   onClick={() => setDelayUnit("minutes")}
                   className={`rounded px-2.5 py-1 transition-colors ${
                     delayUnit === "minutes"
-                      ? "bg-primary text-white"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-primary text-white font-bold"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
                   }`}
                 >
                   minutes
@@ -392,24 +546,24 @@ export function CampaignBuilder() {
                   key={p.label}
                   type="button"
                   onClick={() => { setMinDelay(p.min); setMaxDelay(p.max); }}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
                     activePreset?.label === p.label
-                      ? "border-primary bg-primary/20 text-primary"
-                      : "border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500"
+                      ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900"
                   }`}
                 >
                   <p.icon className="h-3 w-3" />
                   {p.label}
-                  <span className="text-slate-400">({p.desc})</span>
+                  <span className="text-slate-500 dark:text-slate-400">({p.desc})</span>
                 </button>
               ))}
               <button
                 type="button"
                 onClick={() => { setMinDelay(0); setMaxDelay(0); }}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
                   !activePreset && minDelay === 0 && maxDelay === 0
-                    ? "border-primary bg-primary/20 text-primary"
-                    : "border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500"
+                    ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900"
                 }`}
               >
                 Custom
@@ -417,11 +571,11 @@ export function CampaignBuilder() {
             </div>
 
             {/* Sliders */}
-            <div className="rounded-lg border border-slate-700 bg-slate-900/60 p-4 space-y-5">
+            <div className="rounded-lg border border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40 p-4 space-y-5">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Minimum delay</span>
-                  <span className="font-mono font-semibold text-emerald-400">{fmtSeconds(minDelay)}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Minimum delay</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{fmtSeconds(minDelay)}</span>
                 </div>
                 <Slider
                   min={0}
@@ -435,7 +589,7 @@ export function CampaignBuilder() {
                   }}
                   className="w-full"
                 />
-                <div className="flex justify-between text-[10px] text-slate-600">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>0</span>
                   <span>{delayUnit === "minutes" ? "30 min" : "30 min"}</span>
                 </div>
@@ -443,8 +597,8 @@ export function CampaignBuilder() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Maximum delay</span>
-                  <span className="font-mono font-semibold text-blue-400">{fmtSeconds(maxDelay)}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Maximum delay</span>
+                  <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{fmtSeconds(maxDelay)}</span>
                 </div>
                 <Slider
                   min={0}
@@ -458,7 +612,7 @@ export function CampaignBuilder() {
                   }}
                   className="w-full"
                 />
-                <div className="flex justify-between text-[10px] text-slate-600">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>0</span>
                   <span>30 min</span>
                 </div>
@@ -467,7 +621,7 @@ export function CampaignBuilder() {
               {/* Or type exact values */}
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="space-y-1">
-                  <Label htmlFor="minDelayInput" className="text-xs text-slate-400">
+                  <Label htmlFor="minDelayInput" className="text-xs text-slate-500 dark:text-slate-400">
                     Min ({delayUnit})
                   </Label>
                   <Input
@@ -480,11 +634,11 @@ export function CampaignBuilder() {
                       setMinDelay(secs);
                       if (secs > maxDelay) setMaxDelay(secs);
                     }}
-                    className="h-8 text-sm font-mono"
+                    className="h-8 text-sm font-mono bg-white border-slate-205 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="maxDelayInput" className="text-xs text-slate-400">
+                  <Label htmlFor="maxDelayInput" className="text-xs text-slate-500 dark:text-slate-400">
                     Max ({delayUnit})
                   </Label>
                   <Input
@@ -497,22 +651,22 @@ export function CampaignBuilder() {
                       setMaxDelay(secs);
                       if (secs < minDelay) setMinDelay(secs);
                     }}
-                    className="h-8 text-sm font-mono"
+                    className="h-8 text-sm font-mono bg-white border-slate-205 text-slate-900 focus:border-primary dark:bg-slate-950 dark:border-slate-800 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* Live preview */}
-              <div className="rounded-md border border-slate-700/60 bg-slate-800/40 px-4 py-2.5 text-xs text-slate-300">
-                <span className="text-slate-500">Send schedule preview: </span>
+              <div className="rounded-md border border-slate-200 bg-slate-100/50 dark:border-slate-800 dark:bg-slate-800/40 px-4 py-2.5 text-xs text-slate-700 dark:text-slate-300">
+                <span className="text-slate-500 dark:text-slate-400">Send schedule preview: </span>
                 Each email will be sent{" "}
                 {minDelay === maxDelay
-                  ? <span className="font-semibold text-white">{fmtSeconds(minDelay)} apart</span>
+                  ? <span className="font-bold text-slate-900 dark:text-white">{fmtSeconds(minDelay)} apart</span>
                   : <>
                       between{" "}
-                      <span className="font-semibold text-emerald-400">{fmtSeconds(minDelay)}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{fmtSeconds(minDelay)}</span>
                       {" "}&amp;{" "}
-                      <span className="font-semibold text-blue-400">{fmtSeconds(maxDelay)}</span>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">{fmtSeconds(maxDelay)}</span>
                       {" "}apart (random)
                     </>}
               </div>
@@ -520,10 +674,10 @@ export function CampaignBuilder() {
           </div>
 
           {/* ── Actions ── */}
-          <Separator />
+          <Separator className="bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center justify-between pt-2">
-            <Button variant="ghost" onClick={() => navigate("/campaigns")}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saveMutation.isPending} className="gap-2">
+            <Button variant="ghost" onClick={() => navigate("/campaigns")} className="text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">Cancel</Button>
+            <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-primary hover:bg-primary/90 text-white font-bold gap-2 rounded-xl transition-all duration-200 shadow-md shadow-primary/10">
               {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               {isEdit ? "Update" : "Create"} Campaign
             </Button>

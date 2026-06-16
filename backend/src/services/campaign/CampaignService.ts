@@ -22,6 +22,7 @@ export interface CreateCampaignInput {
     htmlBody: string;
     textBody?: string;
     from: string;
+    fromName?: string;
     replyTo?: string;
     signature?: string;
   };
@@ -46,6 +47,13 @@ export interface CreateCampaignInput {
     excludeEmails?: string[];
     excludeOrganizations?: string[];
   };
+  attachments?: Array<{
+    fileName: string;
+    fileType: string;
+    s3Key: string;
+    s3Url: string;
+    fileSize: number;
+  }>;
 }
 
 export interface UpdateCampaignInput {
@@ -53,6 +61,7 @@ export interface UpdateCampaignInput {
   description?: string;
   emailContent?: Partial<CreateCampaignInput['emailContent']>;
   config?: Partial<CreateCampaignInput['config']>;
+  attachments?: CreateCampaignInput['attachments'];
 }
 
 class CampaignService {
@@ -91,11 +100,19 @@ class CampaignService {
           htmlBody: data.emailContent.htmlBody,
           textBody: data.emailContent.textBody,
           from: data.emailContent.from,
+          fromName: data.emailContent.fromName,
           replyTo: data.emailContent.replyTo,
           mergeFields,
           signature: data.emailContent.signature,
         },
-        attachments: [],
+        attachments: (data.attachments || []).map((a: any) => ({
+          fileName: a.fileName,
+          fileType: a.fileType,
+          s3Key: a.s3Key,
+          s3Url: a.s3Url,
+          fileSize: a.fileSize,
+          uploadedAt: new Date()
+        })),
         config: {
           status: CampaignStatus.DRAFT,
           targetOrganizations: data.config.targetOrganizations,
@@ -227,6 +244,16 @@ class CampaignService {
       // Update basic fields
       if (data.campaignName) campaign.campaignName = data.campaignName.trim();
       if (data.description !== undefined) campaign.description = data.description?.trim();
+      if (data.attachments !== undefined) {
+        campaign.attachments = data.attachments.map((a: any) => ({
+          fileName: a.fileName,
+          fileType: a.fileType,
+          s3Key: a.s3Key,
+          s3Url: a.s3Url,
+          fileSize: a.fileSize,
+          uploadedAt: a.uploadedAt ? new Date(a.uploadedAt) : new Date()
+        }));
+      }
 
       // Update email content
       if (data.emailContent) {

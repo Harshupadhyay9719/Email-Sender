@@ -7,6 +7,8 @@ const googleapis_1 = require("googleapis");
 const index_1 = require("../../models/index");
 const encryption_1 = require("../../utils/encryption");
 const env_1 = __importDefault(require("../../config/env"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const logger_1 = __importDefault(require("../../utils/logger"));
 class GmailService {
     /**
@@ -228,27 +230,71 @@ class GmailService {
      * Construct raw MIME email string
      */
     buildMimeEmail(input) {
-        const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-        // Clean headers and bodies
         const replyToHeader = input.replyTo ? `Reply-To: ${input.replyTo}\r\n` : '';
         const textBodyContent = input.textBody || '';
         const htmlBodyContent = input.htmlBody;
-        // Construct raw MIME email body
+        const hasAttachments = input.attachments && input.attachments.length > 0;
+        if (!hasAttachments) {
+            const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+            return `From: ${input.from}\r\n` +
+                `To: ${input.to}\r\n` +
+                replyToHeader +
+                `Subject: =?utf-8?B?${Buffer.from(input.subject).toString('base64')}?=\r\n` +
+                `MIME-Version: 1.0\r\n` +
+                `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n` +
+                `--${boundary}\r\n` +
+                `Content-Type: text/plain; charset=UTF-8\r\n` +
+                `Content-Transfer-Encoding: base64\r\n\r\n` +
+                `${Buffer.from(textBodyContent).toString('base64')}\r\n\r\n` +
+                `--${boundary}\r\n` +
+                `Content-Type: text/html; charset=UTF-8\r\n` +
+                `Content-Transfer-Encoding: base64\r\n\r\n` +
+                `${Buffer.from(htmlBodyContent).toString('base64')}\r\n\r\n` +
+                `--${boundary}--`;
+        }
+        const mixedBoundary = `----=_Part_Mixed_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+        const altBoundary = `----=_Part_Alt_${Date.now()}_${Math.random().toString(36).substring(2)}`;
         let raw = `From: ${input.from}\r\n` +
             `To: ${input.to}\r\n` +
             replyToHeader +
             `Subject: =?utf-8?B?${Buffer.from(input.subject).toString('base64')}?=\r\n` +
             `MIME-Version: 1.0\r\n` +
-            `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n` +
-            `--${boundary}\r\n` +
+            `Content-Type: multipart/mixed; boundary="${mixedBoundary}"\r\n\r\n` +
+            `--${mixedBoundary}\r\n` +
+            `Content-Type: multipart/alternative; boundary="${altBoundary}"\r\n\r\n` +
+            `--${altBoundary}\r\n` +
             `Content-Type: text/plain; charset=UTF-8\r\n` +
             `Content-Transfer-Encoding: base64\r\n\r\n` +
             `${Buffer.from(textBodyContent).toString('base64')}\r\n\r\n` +
-            `--${boundary}\r\n` +
+            `--${altBoundary}\r\n` +
             `Content-Type: text/html; charset=UTF-8\r\n` +
             `Content-Transfer-Encoding: base64\r\n\r\n` +
             `${Buffer.from(htmlBodyContent).toString('base64')}\r\n\r\n` +
-            `--${boundary}--`;
+            `--${altBoundary}--\r\n\r\n`;
+        for (const att of input.attachments) {
+            const filePath = path_1.default.join(__dirname, '../../../uploads', att.s3Key);
+            if (fs_1.default.existsSync(filePath)) {
+                try {
+                    const fileContent = fs_1.default.readFileSync(filePath);
+                    const base64Content = fileContent.toString('base64');
+                    // Format base64 to wrap lines at 76 characters
+                    const formattedBase64 = base64Content.replace(/(.{76})/g, '$1\r\n');
+                    raw += `--${mixedBoundary}\r\n` +
+                        `Content-Type: ${att.fileType || 'application/octet-stream'}; name="${att.fileName}"\r\n` +
+                        `Content-Description: ${att.fileName}\r\n` +
+                        `Content-Disposition: attachment; filename="${att.fileName}"; size=${att.fileSize || fileContent.length}\r\n` +
+                        `Content-Transfer-Encoding: base64\r\n\r\n` +
+                        `${formattedBase64}\r\n\r\n`;
+                }
+                catch (readErr) {
+                    logger_1.default.error(`Error reading attachment file ${filePath}:`, readErr);
+                }
+            }
+            else {
+                logger_1.default.warn(`Attachment file not found at path: ${filePath}`);
+            }
+        }
+        raw += `--${mixedBoundary}--`;
         return raw;
     }
 }

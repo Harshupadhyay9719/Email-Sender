@@ -47,11 +47,19 @@ class CampaignService {
                     htmlBody: data.emailContent.htmlBody,
                     textBody: data.emailContent.textBody,
                     from: data.emailContent.from,
+                    fromName: data.emailContent.fromName,
                     replyTo: data.emailContent.replyTo,
                     mergeFields,
                     signature: data.emailContent.signature,
                 },
-                attachments: [],
+                attachments: (data.attachments || []).map((a) => ({
+                    fileName: a.fileName,
+                    fileType: a.fileType,
+                    s3Key: a.s3Key,
+                    s3Url: a.s3Url,
+                    fileSize: a.fileSize,
+                    uploadedAt: new Date()
+                })),
                 config: {
                     status: index_2.CampaignStatus.DRAFT,
                     targetOrganizations: data.config.targetOrganizations,
@@ -165,6 +173,16 @@ class CampaignService {
                 campaign.campaignName = data.campaignName.trim();
             if (data.description !== undefined)
                 campaign.description = data.description?.trim();
+            if (data.attachments !== undefined) {
+                campaign.attachments = data.attachments.map((a) => ({
+                    fileName: a.fileName,
+                    fileType: a.fileType,
+                    s3Key: a.s3Key,
+                    s3Url: a.s3Url,
+                    fileSize: a.fileSize,
+                    uploadedAt: a.uploadedAt ? new Date(a.uploadedAt) : new Date()
+                }));
+            }
             // Update email content
             if (data.emailContent) {
                 campaign.emailContent = {

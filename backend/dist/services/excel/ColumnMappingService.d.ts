@@ -47,6 +47,7 @@ declare class ColumnMappingService {
         label: string;
     }[];
     extractColumns(filePath: string): string[];
+    getSampleValues(filePath: string): Record<string, string[]>;
     suggestMappings(columns: string[]): SuggestedMapping[];
     validateMappings(mappings: ColumnMapping[]): void;
     parseWithMappings(filePath: string, mappings: ColumnMapping[]): MappedParseResult;

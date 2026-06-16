@@ -46,6 +46,10 @@ class OrgImportService {
     return ColumnMappingService.suggestMappings(columns);
   }
 
+  getSampleValues(filePath: string): Record<string, string[]> {
+    return ColumnMappingService.getSampleValues(filePath);
+  }
+
   parseWithMappings(filePath: string, mappings: ColumnMapping[]): MappedParseResult {
     return ColumnMappingService.parseWithMappings(filePath, mappings);
   }

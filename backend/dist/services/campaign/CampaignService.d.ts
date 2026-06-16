@@ -14,6 +14,7 @@ export interface CreateCampaignInput {
         htmlBody: string;
         textBody?: string;
         from: string;
+        fromName?: string;
         replyTo?: string;
         signature?: string;
     };
@@ -38,12 +39,20 @@ export interface CreateCampaignInput {
         excludeEmails?: string[];
         excludeOrganizations?: string[];
     };
+    attachments?: Array<{
+        fileName: string;
+        fileType: string;
+        s3Key: string;
+        s3Url: string;
+        fileSize: number;
+    }>;
 }
 export interface UpdateCampaignInput {
     campaignName?: string;
     description?: string;
     emailContent?: Partial<CreateCampaignInput['emailContent']>;
     config?: Partial<CreateCampaignInput['config']>;
+    attachments?: CreateCampaignInput['attachments'];
 }
 declare class CampaignService {
     /**

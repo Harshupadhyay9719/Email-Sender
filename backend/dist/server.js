@@ -11,6 +11,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const uuid_1 = require("uuid");
+const path_1 = __importDefault(require("path"));
 const env_1 = __importDefault(require("./config/env"));
 const database_1 = __importDefault(require("./config/database"));
 const index_1 = __importDefault(require("./routes/index"));
@@ -81,6 +82,8 @@ class ExpressServer {
     setupRoutes() {
         const apiPrefix = `/api/${env_1.default.api_version}`;
         this.app.use(apiPrefix, index_1.default);
+        // Serve uploads static folder
+        this.app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
         // Root path handler
         this.app.get('/', (req, res) => {
             res.json({

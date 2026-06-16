@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 import {
   Building2, ChevronDown, ChevronRight, Download, Mail, MoreHorizontal,
   Phone, Plus, Search, ShieldCheck, Trash2, Users, X, CheckCircle2,
-  AlertTriangle, Clock, HelpCircle, Globe, Edit2, RefreshCw,
+  AlertTriangle, Clock, HelpCircle, Globe, Edit2, RefreshCw, Upload,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,8 +128,8 @@ function OrgRow({ org, onViewContacts, onDelete, onValidate }: { org: any; onVie
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-850 shadow-sm rounded-lg transition-colors">
+              <MoreHorizontal className="h-4 w-4 text-slate-700 dark:text-slate-300" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -235,9 +235,14 @@ export function Organizations() {
             {total.toLocaleString()} slots · manage contacts & email status
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}>
-          <Download className="h-4 w-4" />Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}>
+            <Download className="h-4 w-4" />Export CSV
+          </Button>
+          <Button size="sm" className="gap-2 bg-emerald-600 hover:bg-emerald-550 text-white shadow-sm" onClick={() => window.location.href = "/import"}>
+            <Upload className="h-4 w-4" />Import Excel
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -273,9 +278,12 @@ export function Organizations() {
         </div>
       ) : orgs.length === 0 ? (
         <Card className="py-16 text-center">
-          <CardContent>
-            <Building2 className="mx-auto h-10 w-10 text-muted-foreground/40" />
-            <p className="mt-3 text-sm text-muted-foreground">No slots found. Import an Excel file to get started.</p>
+          <CardContent className="flex flex-col items-center justify-center">
+            <Building2 className="mx-auto h-12 w-12 text-slate-300" />
+            <p className="mt-3 text-sm text-slate-500 font-semibold">No slots found. Import an Excel file to get started.</p>
+            <Button className="mt-4 gap-2 bg-emerald-600 hover:bg-emerald-550 text-white shadow-sm" onClick={() => window.location.href = "/import"}>
+              <Upload className="h-4 w-4" />Import Excel File
+            </Button>
           </CardContent>
         </Card>
       ) : (
