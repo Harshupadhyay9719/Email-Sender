@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
+import fs from 'fs';
 import config from './config/env';
 import Database from './config/database';
 import routes from './routes/index';
@@ -96,16 +97,6 @@ class ExpressServer {
     // Serve uploads static folder
     this.app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-    // Root path handler
-    this.app.get('/', (req: Request, res: Response) => {
-      res.json({
-        status: 'ok',
-        message: 'Email Campaign API is running',
-        version: config.api_version,
-        health: '/api/health',
-      });
-    });
-
     // For backwards compatibility
     this.app.use('/api/health', (req: Request, res: Response) => {
       res.json({
@@ -113,6 +104,28 @@ class ExpressServer {
         timestamp: new Date(),
         version: config.api_version,
       });
+    });
+
+    // Serve frontend static assets in production
+    const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
+    this.app.use(express.static(frontendDistPath));
+
+    // Handle React Router SPA client-side routing by serving index.html for all other routes
+    this.app.get('*', (req: Request, res: Response, next: NextFunction) => {
+      if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+        return next();
+      }
+      const indexPath = path.join(frontendDistPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.json({
+          status: 'ok',
+          message: 'Email Campaign API is running (frontend build not found)',
+          version: config.api_version,
+          health: '/api/health',
+        });
+      }
     });
   }
 
