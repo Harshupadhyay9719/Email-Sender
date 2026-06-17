@@ -57,7 +57,7 @@ class ExpressServer {
     // CORS middleware
     this.app.use(
       cors({
-        origin: (origin, callback) => {
+        origin: (origin: any, callback: any) => {
           if (!origin) return callback(null, true);
           if (config.node_env === 'development') {
             return callback(null, true);

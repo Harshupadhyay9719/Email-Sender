@@ -15,19 +15,19 @@ import { ValidationError } from '../utils/errors';
 import logger from '../utils/logger';
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
+  destination: (_req: any, _file: any, cb: any) => {
     const uploadDir = path.join(__dirname, '../../uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
-  filename: (_req, file, cb) => {
+  filename: (_req: any, file: any, cb: any) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 
-const fileFilter = (_req: any, file: Express.Multer.File, cb: Function) => {
+const fileFilter = (_req: any, file: any, cb: any) => {
   if (
     file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
     file.originalname.endsWith('.xlsx')

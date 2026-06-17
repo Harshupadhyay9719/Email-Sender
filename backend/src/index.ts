@@ -21,13 +21,13 @@ process.on('SIGINT', async () => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (error: any) => {
   logger.error('Uncaught Exception:', error);
   process.exit(1);
 });
 
 // Handle unhandled rejections
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason: any, promise: any) => {
   logger.error('Unhandled Rejection:', { promise, reason });
   process.exit(1);
 });
