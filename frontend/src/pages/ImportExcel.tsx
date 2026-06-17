@@ -677,7 +677,7 @@ export function ImportExcel() {
               <div className="pt-4 border-t border-slate-200">
                 <p className="text-xs font-extrabold text-slate-700 mb-2 uppercase tracking-wider">Example Templates</p>
                 <div className="flex flex-wrap gap-2">
-                  {templates.map((t) => (
+                  {templates.map((t: any) => (
                     <Button
                       key={t.id}
                       variant="outline"
