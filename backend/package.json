@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
-    "build": "tsc",
+    "build": "node -e \"const cp=require('child_process'); try { cp.execSync('tsc --ignoreDeprecations 6.0', {stdio:'inherit'}); } catch (e) { cp.execSync('tsc', {stdio:'inherit'}); }\"",
     "start": "node dist/index.js",
     "test": "jest --coverage --passWithNoTests",
     "test:watch": "jest --watch",
