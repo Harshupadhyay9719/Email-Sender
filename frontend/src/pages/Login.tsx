@@ -310,31 +310,28 @@ export function Login() {
 
               {/* Metric Blocks Grid */}
               <div className="grid grid-cols-3 gap-2.5">
-                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Sent Today</span>
-                  <p className="text-base font-bold text-slate-800 mt-0.5">412</p>
-                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-emerald-600">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>+8.2%</span>
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 flex flex-col justify-between min-h-[72px]">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Inbox Rotation</span>
+                    <p className="text-[11px] font-bold text-slate-800 mt-0.5">Multi-Sender</p>
                   </div>
+                  <span className="text-[8px] text-slate-500 font-semibold leading-tight">Alternates sending dynamically</span>
                 </div>
 
-                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Open Rate</span>
-                  <p className="text-base font-bold text-slate-800 mt-0.5">68.4%</p>
-                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-primary">
-                    <Sparkles className="h-3 w-3" />
-                    <span>Avg: 22%</span>
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 flex flex-col justify-between min-h-[72px]">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Direct API</span>
+                    <p className="text-[11px] font-bold text-slate-800 mt-0.5">Google OAuth</p>
                   </div>
+                  <span className="text-[8px] text-slate-500 font-semibold leading-tight">Secure OAuth verification</span>
                 </div>
 
-                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Bounces</span>
-                  <p className="text-base font-bold text-slate-800 mt-0.5">0.0%</p>
-                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-emerald-600">
-                    <ShieldCheck className="h-3 w-3" />
-                    <span>Clean</span>
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5 flex flex-col justify-between min-h-[72px]">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Reputation</span>
+                    <p className="text-[11px] font-bold text-slate-800 mt-0.5">Safety Guard</p>
                   </div>
+                  <span className="text-[8px] text-slate-500 font-semibold leading-tight">Monitors bounces & retries</span>
                 </div>
               </div>
             </div>
