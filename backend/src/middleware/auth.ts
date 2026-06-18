@@ -7,6 +7,7 @@ import { Request, Response, NextFunction } from 'express';
 import AuthService from '../services/auth/AuthService';
 import { AuthenticationError, AuthorizationError } from '../utils/errors';
 import { JwtPayload, UserRole } from '../types/index';
+import { User } from '../models/index';
 import logger from '../utils/logger';
 
 // Extend Express Request type to include user information
@@ -21,7 +22,7 @@ declare global {
 /**
  * Authenticate JWT token from request header
  */
-export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -32,9 +33,20 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     const token = authHeader.substring(7);
     const decoded = AuthService.verifyAccessToken(token);
 
+    // Verify user in database to enforce active status and role changes in real time
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new AuthenticationError('User not found');
+    }
+
+    if (!user.isActive) {
+      throw new AuthenticationError('User account is deactivated');
+    }
+
     req.user = {
-      ...decoded,
-      userId: decoded.userId,
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
     };
 
     next();

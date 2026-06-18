@@ -10,11 +10,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireOperator = exports.requireAdmin = exports.authorize = exports.authenticate = void 0;
 const AuthService_1 = __importDefault(require("../services/auth/AuthService"));
 const errors_1 = require("../utils/errors");
+const index_1 = require("../models/index");
 const logger_1 = __importDefault(require("../utils/logger"));
 /**
  * Authenticate JWT token from request header
  */
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,9 +23,18 @@ const authenticate = (req, res, next) => {
         }
         const token = authHeader.substring(7);
         const decoded = AuthService_1.default.verifyAccessToken(token);
+        // Verify user in database to enforce active status and role changes in real time
+        const user = await index_1.User.findById(decoded.userId);
+        if (!user) {
+            throw new errors_1.AuthenticationError('User not found');
+        }
+        if (!user.isActive) {
+            throw new errors_1.AuthenticationError('User account is deactivated');
+        }
         req.user = {
-            ...decoded,
-            userId: decoded.userId,
+            userId: user._id.toString(),
+            email: user.email,
+            role: user.role,
         };
         next();
     }
