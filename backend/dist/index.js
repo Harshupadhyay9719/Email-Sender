@@ -36,4 +36,3 @@ server.start().catch((error) => {
     process.exit(1);
 });
 exports.default = server;
-//# sourceMappingURL=index.js.map

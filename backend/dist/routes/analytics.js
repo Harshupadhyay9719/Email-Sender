@@ -15,4 +15,3 @@ router.get('/activity', AnalyticsController_1.AnalyticsController.getActivity);
 router.get('/saved', AnalyticsController_1.AnalyticsController.getSavedReports);
 router.get('/export', AnalyticsController_1.AnalyticsController.exportReport);
 exports.default = router;
-//# sourceMappingURL=analytics.js.map

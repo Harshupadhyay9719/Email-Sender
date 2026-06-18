@@ -12,6 +12,7 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const uuid_1 = require("uuid");
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const env_1 = __importDefault(require("./config/env"));
 const database_1 = __importDefault(require("./config/database"));
 const index_1 = __importDefault(require("./routes/index"));
@@ -19,6 +20,7 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const emailWorker_1 = require("./queue/emailWorker");
 const logger_1 = __importDefault(require("./utils/logger"));
 class ExpressServer {
+    app;
     constructor() {
         this.app = (0, express_1.default)();
         this.setupMiddleware();
@@ -84,15 +86,6 @@ class ExpressServer {
         this.app.use(apiPrefix, index_1.default);
         // Serve uploads static folder
         this.app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
-        // Root path handler
-        this.app.get('/', (req, res) => {
-            res.json({
-                status: 'ok',
-                message: 'Email Campaign API is running',
-                version: env_1.default.api_version,
-                health: '/api/health',
-            });
-        });
         // For backwards compatibility
         this.app.use('/api/health', (req, res) => {
             res.json({
@@ -100,6 +93,27 @@ class ExpressServer {
                 timestamp: new Date(),
                 version: env_1.default.api_version,
             });
+        });
+        // Serve frontend static assets in production
+        const frontendDistPath = path_1.default.join(__dirname, '../../../frontend/dist');
+        this.app.use(express_1.default.static(frontendDistPath));
+        // Handle React Router SPA client-side routing by serving index.html for all other routes
+        this.app.get('*', (req, res, next) => {
+            if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+                return next();
+            }
+            const indexPath = path_1.default.join(frontendDistPath, 'index.html');
+            if (fs_1.default.existsSync(indexPath)) {
+                res.sendFile(indexPath);
+            }
+            else {
+                res.json({
+                    status: 'ok',
+                    message: 'Email Campaign API is running (frontend build not found)',
+                    version: env_1.default.api_version,
+                    health: '/api/health',
+                });
+            }
         });
     }
     /**
@@ -156,4 +170,3 @@ class ExpressServer {
     }
 }
 exports.default = ExpressServer;
-//# sourceMappingURL=server.js.map

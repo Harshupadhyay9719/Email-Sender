@@ -67,4 +67,3 @@ const requireOperator = (req, res, next) => {
     (0, exports.authorize)('Admin', 'Operator')(req, res, next);
 };
 exports.requireOperator = requireOperator;
-//# sourceMappingURL=auth.js.map

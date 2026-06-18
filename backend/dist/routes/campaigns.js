@@ -70,4 +70,3 @@ router.post('/:id/validate-contacts', CampaignController_1.CampaignController.va
 router.post('/:id/update-statistics', CampaignController_1.CampaignController.updateStatistics);
 router.post('/:id/reset', CampaignController_1.CampaignController.reset);
 exports.default = router;
-//# sourceMappingURL=campaigns.js.map

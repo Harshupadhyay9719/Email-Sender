@@ -8,13 +8,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const env_1 = __importDefault(require("../config/env"));
 class Logger {
+    logLevel;
+    levels = {
+        error: 0,
+        warn: 1,
+        info: 2,
+        debug: 3,
+    };
     constructor() {
-        this.levels = {
-            error: 0,
-            warn: 1,
-            info: 2,
-            debug: 3,
-        };
         this.logLevel = this.levels[env_1.default.log_level] || this.levels.info;
     }
     formatTimestamp() {
@@ -45,4 +46,3 @@ class Logger {
     }
 }
 exports.default = new Logger();
-//# sourceMappingURL=logger.js.map

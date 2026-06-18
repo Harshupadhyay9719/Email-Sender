@@ -29,4 +29,3 @@ function buildEmailJobOptions() {
 async function checkRedisConnection() {
     return false;
 }
-//# sourceMappingURL=emailQueue.js.map

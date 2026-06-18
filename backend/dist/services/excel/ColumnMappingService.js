@@ -73,12 +73,10 @@ const AUTO_MAP_RULES = [
     { field: 'org.tags', patterns: ['tags', 'tag', 'labels', 'label', 'categories'] },
 ];
 class ColumnMappingService {
-    constructor() {
-        this.fieldOptions = Object.entries(FIELD_LABELS).map(([value, label]) => ({
-            value: value,
-            label,
-        }));
-    }
+    fieldOptions = Object.entries(FIELD_LABELS).map(([value, label]) => ({
+        value: value,
+        label,
+    }));
     extractColumns(filePath) {
         const sheet = this.readFirstSheet(filePath);
         const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', blankrows: false, header: 1 });
@@ -367,4 +365,3 @@ class ColumnMappingService {
     }
 }
 exports.default = new ColumnMappingService();
-//# sourceMappingURL=ColumnMappingService.js.map

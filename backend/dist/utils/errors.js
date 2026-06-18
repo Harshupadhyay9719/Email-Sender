@@ -5,6 +5,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExternalServiceError = exports.InternalServerError = exports.CampaignLaunchConflictError = exports.ConflictError = exports.NotFoundError = exports.AuthorizationError = exports.AuthenticationError = exports.ValidationError = exports.AppError = void 0;
 class AppError extends Error {
+    statusCode;
+    isOperational;
     constructor(statusCode, message, isOperational = true) {
         super(message);
         this.statusCode = statusCode;
@@ -44,6 +46,10 @@ class ConflictError extends AppError {
 }
 exports.ConflictError = ConflictError;
 class CampaignLaunchConflictError extends AppError {
+    emailsQueued;
+    emailsSent;
+    campaignStatus;
+    reasonForBlock;
     constructor(message, emailsQueued, emailsSent, campaignStatus, reasonForBlock) {
         super(409, message);
         this.emailsQueued = emailsQueued;
@@ -65,4 +71,3 @@ class ExternalServiceError extends AppError {
     }
 }
 exports.ExternalServiceError = ExternalServiceError;
-//# sourceMappingURL=errors.js.map

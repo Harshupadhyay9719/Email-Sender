@@ -24,4 +24,3 @@ router.get('/google/status', auth_1.authenticate, GoogleAuthController_1.GoogleA
 router.post('/google/disconnect', auth_1.authenticate, GoogleAuthController_1.GoogleAuthController.disconnectAccount);
 router.get('/google/scopes', auth_1.authenticate, GoogleAuthController_1.GoogleAuthController.getTokenScopes);
 exports.default = router;
-//# sourceMappingURL=auth.js.map

@@ -87,4 +87,3 @@ router.post('/gmail-send', async (req, res) => {
     }
 });
 exports.default = router;
-//# sourceMappingURL=test.js.map

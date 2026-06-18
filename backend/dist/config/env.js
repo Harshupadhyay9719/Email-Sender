@@ -46,4 +46,3 @@ if (config.node_env === 'production') {
     }
 }
 exports.default = config;
-//# sourceMappingURL=env.js.map

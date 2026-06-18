@@ -23,4 +23,3 @@ router.put('/:id/contacts/:contactId', OrganizationController_1.OrganizationCont
 router.delete('/:id/contacts/:contactId', OrganizationController_1.OrganizationController.deleteContact);
 router.post('/:id/validate', OrganizationController_1.OrganizationController.validateContacts);
 exports.default = router;
-//# sourceMappingURL=organizations.js.map

@@ -56,7 +56,7 @@ async function sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade = 
         logger_1.default.info(`[DirectSend] Campaign ${campaignId} is paused. Rescheduling log ${emailLogId} in 60 s.`);
         setTimeout(() => {
             sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade).catch((err) => logger_1.default.error(`[DirectSend] Rescheduled send failed for log ${emailLogId}:`, err));
-        }, 60000);
+        }, 60_000);
         return;
     }
     // Mark campaign as Sending on first job
@@ -129,7 +129,7 @@ async function sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade = 
         emailLog.tracking.failureAttempts = nextAttempt;
         emailLog.tracking.failureReason = error.message;
         emailLog.tracking.failureCode = error.name;
-        emailLog.tracking.nextRetryAt = new Date(Date.now() + retryDelaySeconds * 1000);
+        emailLog.tracking.nextRetryAt = new Date(Date.now() + retryDelaySeconds * 1_000);
         if (nextAttempt > campaign.config.retryConfig.maxRetries) {
             emailLog.status = index_2.EmailStatus.FAILED;
             await emailLog.save();
@@ -141,7 +141,7 @@ async function sendCampaignEmailDirectly(campaignId, emailLogId, attemptsMade = 
             logger_1.default.info(`[DirectSend] Retrying log ${emailLogId} in ${retryDelaySeconds} s (attempt ${nextAttempt}/${campaign.config.retryConfig.maxRetries})`);
             setTimeout(() => {
                 sendCampaignEmailDirectly(campaignId, emailLogId, nextAttempt).catch((err) => logger_1.default.error(`[DirectSend] Retry failed for log ${emailLogId}:`, err));
-            }, retryDelaySeconds * 1000);
+            }, retryDelaySeconds * 1_000);
         }
     }
 }
@@ -208,4 +208,3 @@ async function markCampaignCompleteIfDone(campaignId) {
     await campaign.save();
     logger_1.default.info(`[DirectSend] Campaign ${campaignId} marked Completed.`);
 }
-//# sourceMappingURL=emailWorker.js.map

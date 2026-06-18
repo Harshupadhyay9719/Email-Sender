@@ -30,4 +30,3 @@ var EmailStatus;
     EmailStatus["BOUNCED"] = "bounced";
     EmailStatus["SKIPPED"] = "skipped";
 })(EmailStatus || (exports.EmailStatus = EmailStatus = {}));
-//# sourceMappingURL=index.js.map

@@ -46,10 +46,8 @@ const index_1 = require("../../models/index");
 const errors_1 = require("../../utils/errors");
 const logger_1 = __importDefault(require("../../utils/logger"));
 class ExcelParserService {
-    constructor() {
-        this.REQUIRED_COLUMNS = ['Company Name', 'Name1', 'Email1'];
-        this.CONTACT_PATTERN = /^(Name|Email|Phone)(\d+)$/i;
-    }
+    REQUIRED_COLUMNS = ['Company Name', 'Name1', 'Email1'];
+    CONTACT_PATTERN = /^(Name|Email|Phone)(\d+)$/i;
     /**
      * Parse Excel file and extract data
      */
@@ -308,4 +306,3 @@ class ExcelParserService {
     }
 }
 exports.default = new ExcelParserService();
-//# sourceMappingURL=ExcelParserService.js.map

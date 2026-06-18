@@ -561,4 +561,3 @@ exports.Campaign = mongoose_1.default.model('Campaign', campaignSchema);
 exports.EmailLog = mongoose_1.default.model('EmailLog', emailLogSchema);
 exports.ImportLog = mongoose_1.default.model('ImportLog', importLogSchema);
 exports.ConnectedAccount = mongoose_1.default.model('ConnectedAccount', connectedAccountSchema);
-//# sourceMappingURL=index.js.map
