@@ -10,6 +10,7 @@ import campaignRoutes from './campaigns';
 import importRoutes from './import';
 import analyticsRoutes from './analytics';
 import testRoutes from './test';
+import adminRoutes from './admin';
 import config from '../config/env';
 
 import mongoose from 'mongoose';
@@ -45,5 +46,6 @@ router.use('/campaigns', campaignRoutes);
 router.use('/import', importRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/test', testRoutes);
+router.use('/admin', adminRoutes);
 
 export default router;
