@@ -6,13 +6,15 @@ type SelectProps = {
   onValueChange: (value: string) => void;
   className?: string;
   children: React.ReactNode;
+  disabled?: boolean;
 };
 
-export const Select: React.FC<SelectProps> = ({ value, onValueChange, className, children, ...props }) => (
+export const Select: React.FC<SelectProps> = ({ value, onValueChange, className, children, disabled, ...props }) => (
   <select
     value={value}
     onChange={e => onValueChange(e.target.value)}
     className={cn('bg-background border border-input rounded-md p-2', className)}
+    disabled={disabled}
     {...props}
   >
     {children}

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   BarChart3, Building2, FileBarChart, FileSpreadsheet,
   LayoutDashboard, LogOut, Mail, MailPlus, Menu, Send, Settings, User, X,
-  Sun, Moon, Palette,
+  Sun, Moon, Palette, Shield,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -94,51 +94,59 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     localStorage.setItem("color-theme", colorTheme);
   }, [colorTheme]);
 
-  const SidebarContent = () => (
-    <>
-      <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow shadow-primary/40">
-          <Send className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-white">ApexReach</p>
-          <p className="text-xs text-slate-400">Campaign Platform</p>
-        </div>
-      </div>
-      <nav className="flex flex-col gap-1 p-3">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            onClick={() => setSidebarOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400 transition-all hover:bg-slate-800 hover:text-white",
-                isActive && "bg-primary/20 text-teal-300 border border-primary/30 font-semibold"
-              )
-            }
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-      <div className="mt-auto border-t border-slate-800 p-3">
-        <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
-            {user?.firstName?.[0]}{user?.lastName?.[0]}
+  const SidebarContent = () => {
+    const { isAdmin } = useAuth();
+    const items = [...navItems];
+    if (isAdmin) {
+      items.push({ href: "/admin", label: "Admin Panel", icon: Shield });
+    }
+
+    return (
+      <>
+        <div className="flex h-16 items-center gap-3 border-b border-slate-800 px-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow shadow-primary/40">
+            <Send className="h-4 w-4" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-white">{user?.firstName} {user?.lastName}</p>
-            <p className="truncate text-xs text-slate-400">{user?.role}</p>
+          <div>
+            <p className="text-sm font-semibold text-white">ApexReach</p>
+            <p className="text-xs text-slate-400">Campaign Platform</p>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white" onClick={logout} title="Sign out">
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
-      </div>
-    </>
-  );
+        <nav className="flex flex-col gap-1 p-3">
+          {items.map((item) => (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                cn(
+                  "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400 transition-all hover:bg-slate-800 hover:text-white",
+                  isActive && "bg-primary/20 text-teal-300 border border-primary/30 font-semibold"
+                )
+              }
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="mt-auto border-t border-slate-800 p-3">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
+              {user?.firstName?.[0]}{user?.lastName?.[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-white">{user?.firstName} {user?.lastName}</p>
+              <p className="truncate text-xs text-slate-400">{user?.role}</p>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-white" onClick={logout} title="Sign out">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">

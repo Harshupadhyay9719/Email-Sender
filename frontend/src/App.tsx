@@ -11,6 +11,7 @@ import { CampaignBuilder } from "@/pages/CampaignBuilder";
 import { ImportExcel } from "@/pages/ImportExcel";
 import { Reports } from "@/pages/Reports";
 import { Settings } from "@/pages/Settings";
+import { Admin } from "@/pages/Admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +38,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
@@ -57,6 +58,7 @@ function AppRoutes() {
                 <Route path="/import" element={<ImportExcel />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/dashboard" replace />} />
               </Routes>
             </AppShell>
           </PrivateRoute>
