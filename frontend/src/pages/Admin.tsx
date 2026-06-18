@@ -305,20 +305,20 @@ export function Admin() {
 
       {/* Tabs list */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-muted rounded-xl p-1">
-          <TabsTrigger value="stats" className="rounded-lg data-[state=active]:bg-background">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full max-w-2xl bg-muted rounded-xl p-1 h-auto gap-1">
+          <TabsTrigger value="stats" className="rounded-lg data-[state=active]:bg-background py-2 flex items-center justify-center">
             <TrendingUp className="h-4 w-4 mr-2" />
             System Stats
           </TabsTrigger>
-          <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-background">
+          <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-background py-2 flex items-center justify-center">
             <Users className="h-4 w-4 mr-2" />
             Users
           </TabsTrigger>
-          <TabsTrigger value="accounts" className="rounded-lg data-[state=active]:bg-background">
+          <TabsTrigger value="accounts" className="rounded-lg data-[state=active]:bg-background py-2 flex items-center justify-center">
             <Link2 className="h-4 w-4 mr-2" />
             Gmail IDs
           </TabsTrigger>
-          <TabsTrigger value="logs" className="rounded-lg data-[state=active]:bg-background">
+          <TabsTrigger value="logs" className="rounded-lg data-[state=active]:bg-background py-2 flex items-center justify-center">
             <Mail className="h-4 w-4 mr-2" />
             ID Sending History
           </TabsTrigger>
@@ -438,10 +438,10 @@ export function Admin() {
                   <TableHeader className="bg-muted/50">
                     <TableRow>
                       <TableHead>User Name</TableHead>
-                      <TableHead>Email Address</TableHead>
+                      <TableHead className="hidden sm:table-cell">Email Address</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Account Status</TableHead>
-                      <TableHead>Registered At</TableHead>
+                      <TableHead className="hidden md:table-cell">Registered At</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -460,7 +460,7 @@ export function Admin() {
                             <TableCell className="font-medium text-foreground">
                               {usr.firstName} {usr.lastName} {isSelf && <span className="text-xs text-indigo-600 font-semibold bg-indigo-100/60 px-1.5 py-0.5 rounded ml-1">(You)</span>}
                             </TableCell>
-                            <TableCell className="text-muted-foreground">{usr.email}</TableCell>
+                            <TableCell className="text-muted-foreground hidden sm:table-cell">{usr.email}</TableCell>
                             <TableCell>
                               {isSelf ? (
                                 <Badge variant="outline" className="font-semibold">{usr.role}</Badge>
@@ -482,7 +482,7 @@ export function Admin() {
                                 {usr.isActive ? "Active" : "Inactive"}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-xs text-muted-foreground font-mono">
+                            <TableCell className="text-xs text-muted-foreground font-mono hidden md:table-cell">
                               {new Date(usr.createdAt).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-right">
@@ -538,10 +538,10 @@ export function Admin() {
                   <TableHeader className="bg-muted/50">
                     <TableRow>
                       <TableHead>Sender Gmail ID</TableHead>
-                      <TableHead>Integration Provider</TableHead>
+                      <TableHead className="hidden sm:table-cell">Integration Provider</TableHead>
                       <TableHead>Owner User</TableHead>
                       <TableHead>Verification Status</TableHead>
-                      <TableHead>Connected At</TableHead>
+                      <TableHead className="hidden md:table-cell">Connected At</TableHead>
                       <TableHead className="text-right">Outbound Guard</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -558,7 +558,7 @@ export function Admin() {
                           <TableCell className="font-semibold text-foreground">
                             {acc.email}
                           </TableCell>
-                          <TableCell className="capitalize text-muted-foreground text-xs font-mono">
+                          <TableCell className="capitalize text-muted-foreground text-xs font-mono hidden sm:table-cell">
                             {acc.provider} OAuth 2.0
                           </TableCell>
                           <TableCell>
@@ -578,7 +578,7 @@ export function Admin() {
                               <Check className="h-3 w-3" /> Connected
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground font-mono">
+                          <TableCell className="text-xs text-muted-foreground font-mono hidden md:table-cell">
                             {new Date(acc.createdAt).toLocaleString()}
                           </TableCell>
                           <TableCell className="text-right">
@@ -661,11 +661,11 @@ export function Admin() {
                     <TableHeader className="bg-muted/50">
                       <TableRow>
                         <TableHead>Outbound ID (Sender)</TableHead>
-                        <TableHead>Campaign Name</TableHead>
+                        <TableHead className="hidden sm:table-cell">Campaign Name</TableHead>
                         <TableHead>Recipient</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Timestamp</TableHead>
-                        <TableHead>Diagnostic / Details</TableHead>
+                        <TableHead className="hidden md:table-cell">Timestamp</TableHead>
+                        <TableHead className="hidden sm:table-cell">Diagnostic / Details</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -692,7 +692,7 @@ export function Admin() {
                                   <div className="text-xs text-muted-foreground">"{senderName}"</div>
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="hidden sm:table-cell">
                                 <div className="font-medium text-foreground">{campaignName}</div>
                                 <div className="text-xs text-muted-foreground">by {ownerName}</div>
                               </TableCell>
@@ -703,10 +703,10 @@ export function Admin() {
                                 )}
                               </TableCell>
                               <TableCell>{getStatusBadge(log.status)}</TableCell>
-                              <TableCell className="text-xs text-muted-foreground font-mono">
+                              <TableCell className="text-xs text-muted-foreground font-mono hidden md:table-cell">
                                 {new Date(log.createdAt).toLocaleString()}
                               </TableCell>
-                              <TableCell className="max-w-[240px] truncate text-xs text-muted-foreground">
+                              <TableCell className="max-w-[240px] truncate text-xs text-muted-foreground hidden sm:table-cell">
                                 {log.status === "failed" || log.status === "bounced" ? (
                                   <span className="text-rose-600 font-semibold" title={log.tracking?.failureReason || ""}>
                                     Error: {log.tracking?.failureReason || "Connection issues"}
