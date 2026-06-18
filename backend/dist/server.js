@@ -95,7 +95,7 @@ class ExpressServer {
             });
         });
         // Serve frontend static assets in production
-        const frontendDistPath = path_1.default.join(__dirname, '../../../frontend/dist');
+        const frontendDistPath = path_1.default.join(__dirname, '../../frontend/dist');
         this.app.use(express_1.default.static(frontendDistPath));
         // Handle React Router SPA client-side routing by serving index.html for all other routes
         this.app.get('*', (req, res, next) => {

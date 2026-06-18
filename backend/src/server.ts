@@ -107,7 +107,7 @@ class ExpressServer {
     });
 
     // Serve frontend static assets in production
-    const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
+    const frontendDistPath = path.join(__dirname, '../../frontend/dist');
     this.app.use(express.static(frontendDistPath));
 
     // Handle React Router SPA client-side routing by serving index.html for all other routes
