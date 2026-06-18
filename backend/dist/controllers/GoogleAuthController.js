@@ -11,6 +11,7 @@ const responseHandler_1 = require("../utils/responseHandler");
 const errors_1 = require("../utils/errors");
 const encryption_1 = require("../utils/encryption");
 const logger_1 = __importDefault(require("../utils/logger"));
+const env_1 = __importDefault(require("../config/env"));
 class GoogleAuthController {
     /**
      * GET /auth/google
@@ -91,12 +92,14 @@ class GoogleAuthController {
             // Exchange code for tokens and save account
             await GmailService_1.default.connectAccount(userId, code);
             // Redirect user back to frontend settings page with success flag
-            res.redirect('http://localhost:5173/settings?success=true');
+            const frontendUrl = env_1.default.cors_origin[0] || 'http://localhost:5173';
+            res.redirect(`${frontendUrl}/settings?success=true`);
         }
         catch (error) {
             logger_1.default.error('Error handling Google OAuth callback:', error);
             // Redirect user back to settings page with error query parameter
-            res.redirect(`http://localhost:5173/settings?error=${encodeURIComponent(error.message || 'Failed to connect Gmail account')}`);
+            const frontendUrl = env_1.default.cors_origin[0] || 'http://localhost:5173';
+            res.redirect(`${frontendUrl}/settings?error=${encodeURIComponent(error.message || 'Failed to connect Gmail account')}`);
         }
     }
     /**

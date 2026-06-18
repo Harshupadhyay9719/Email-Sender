@@ -6,6 +6,7 @@ import { ResponseHandler } from '../utils/responseHandler';
 import { ValidationError, AuthenticationError } from '../utils/errors';
 import { encrypt } from '../utils/encryption';
 import logger from '../utils/logger';
+import config from '../config/env';
 
 export class GoogleAuthController {
   /**
@@ -100,11 +101,13 @@ export class GoogleAuthController {
       await GmailService.connectAccount(userId, code);
 
       // Redirect user back to frontend settings page with success flag
-      res.redirect('http://localhost:5173/settings?success=true');
+      const frontendUrl = config.cors_origin[0] || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/settings?success=true`);
     } catch (error: any) {
       logger.error('Error handling Google OAuth callback:', error);
       // Redirect user back to settings page with error query parameter
-      res.redirect(`http://localhost:5173/settings?error=${encodeURIComponent(error.message || 'Failed to connect Gmail account')}`);
+      const frontendUrl = config.cors_origin[0] || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/settings?error=${encodeURIComponent(error.message || 'Failed to connect Gmail account')}`);
     }
   }
 
