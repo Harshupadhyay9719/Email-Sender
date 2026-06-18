@@ -12,14 +12,29 @@ import analyticsRoutes from './analytics';
 import testRoutes from './test';
 import config from '../config/env';
 
+import mongoose from 'mongoose';
+
 const router = Router();
 
 // Health check endpoint
 router.get('/health', (req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
+  const dbStatus = mongoose.connection.readyState;
+  const dbStates: Record<number, string> = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+
+  const isHealthy = dbStatus === 1;
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'ok' : 'unhealthy',
     timestamp: new Date(),
     version: config.api_version,
+    plugs: {
+      database: dbStates[dbStatus] || 'unknown',
+      emailWorker: 'running (direct-send)'
+    }
   });
 });
 

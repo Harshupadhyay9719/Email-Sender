@@ -15,13 +15,26 @@ const import_1 = __importDefault(require("./import"));
 const analytics_1 = __importDefault(require("./analytics"));
 const test_1 = __importDefault(require("./test"));
 const env_1 = __importDefault(require("../config/env"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const router = (0, express_1.Router)();
 // Health check endpoint
 router.get('/health', (req, res) => {
-    res.json({
-        status: 'ok',
+    const dbStatus = mongoose_1.default.connection.readyState;
+    const dbStates = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+    const isHealthy = dbStatus === 1;
+    res.status(isHealthy ? 200 : 503).json({
+        status: isHealthy ? 'ok' : 'unhealthy',
         timestamp: new Date(),
         version: env_1.default.api_version,
+        plugs: {
+            database: dbStates[dbStatus] || 'unknown',
+            emailWorker: 'running (direct-send)'
+        }
     });
 });
 // API routes

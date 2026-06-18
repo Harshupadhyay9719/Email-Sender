@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Send, AlertTriangle, Loader2, Mail, ShieldCheck, Zap } from 'lucide-react';
+import { Send, AlertTriangle, Loader2, Mail, ShieldCheck, Zap, CheckCircle2, TrendingUp, Activity, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -63,12 +63,25 @@ export function Login() {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-8px) rotate(-0.5deg); }
         }
+        @keyframes flowLeftToRight {
+          0% { left: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { left: 100%; opacity: 0; }
+        }
         .animate-float-slow {
           animation: floatSlow 6s ease-in-out infinite;
         }
         .animate-float-delayed {
           animation: floatDelayed 6s ease-in-out infinite;
           animation-delay: 3s;
+        }
+        .animate-flow-fast {
+          animation: flowLeftToRight 2s linear infinite;
+        }
+        .animate-flow-delayed {
+          animation: flowLeftToRight 2s linear infinite;
+          animation-delay: 1s;
         }
       `}</style>
 
@@ -217,14 +230,10 @@ export function Login() {
         {/* Gmail Logo Integration Banner & Feature Stack */}
         <div className="relative z-10 my-auto flex flex-col items-center justify-center space-y-10">
           
-          {/* Gmail integration callout */}
+          {/* Gmail integration callout (No external image) */}
           <div className="max-w-lg w-full bg-white/85 border border-slate-200/80 rounded-2xl p-5 shadow-lg shadow-slate-100/30 backdrop-blur-sm flex items-center gap-4 transition-all duration-300 hover:scale-[1.01]">
-            <div className="flex-shrink-0 bg-slate-50 border border-slate-100 p-3 rounded-xl shadow-inner">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" 
-                alt="Google Gmail logo" 
-                className="h-10 w-10 object-contain"
-              />
+            <div className="flex-shrink-0 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-tr from-red-500/10 to-amber-500/10 border border-red-200/50 dark:border-red-800/30">
+              <Mail className="h-7 w-7 text-red-500" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
@@ -239,55 +248,104 @@ export function Login() {
 
           <div className="relative w-full max-w-lg">
             {/* Upper Left Floating Card */}
-            <div className="absolute -left-16 -top-16 z-30 w-44 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-slow">
+            <div className="absolute -left-12 -top-16 z-30 w-44 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-slow">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-emerald-500" />
                 <span className="text-xs font-bold text-slate-800">Deliverability Engine</span>
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium leading-normal">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-normal">
                 Multi-inbox rotation sends outreach cleanly with high reputation mapping.
               </p>
             </div>
 
-            {/* Back Mockup Image: Connected Accounts Illustration */}
-            <div className="absolute -right-10 -bottom-8 z-10 w-80 rounded-2xl border border-slate-200 bg-white/70 p-2.5 shadow-xl backdrop-blur-sm transition-all duration-500 hover:scale-[1.03] hover:z-30">
-              <div className="relative overflow-hidden rounded-xl bg-slate-50 border border-slate-200">
-                <img
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJpyJqT6lFaoLiaaYw_JqKgLtvp8tEHStpPV7aWIGEPw&s"
-                  alt="Connected Accounts"
-                  className="w-full object-cover aspect-[4/3] filter brightness-95 hover:brightness-100 transition-all duration-300"
-                />
-              </div>
-              <div className="mt-2.5 px-1.5 pb-0.5">
-                <span className="text-xs font-bold text-slate-700">Unified Accounts Connector</span>
-              </div>
-            </div>
-
-            {/* Front Mockup Image: Bulk Email Sender Dashboard */}
-            <div className="relative z-20 w-[420px] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl transition-all duration-500 hover:scale-[1.03]">
-              <div className="relative overflow-hidden rounded-xl bg-slate-50 border border-slate-200">
-                <img
-                  src="https://www.benchmarkemail.com/wp-content/uploads/2019/12/What-is-a-Bulk-Email-Sender.png"
-                  alt="Bulk Sender Metrics Dashboard"
-                  className="w-full object-cover filter brightness-100 transition-all duration-300"
-                />
-              </div>
-              <div className="mt-3 px-1.5 flex items-center justify-between">
+            {/* Central Engine Visual & Real-time Delivery Pipeline (Replaced images) */}
+            <div className="relative z-20 w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+              {/* Card Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-800">Campaign Distribution Hub</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Live monitoring of campaign performance</p>
+                  <div className="flex items-center gap-1.5">
+                    <Activity className="h-4 w-4 text-primary animate-pulse" />
+                    <h4 className="text-xs font-bold text-slate-800">Active Delivery Pipeline</h4>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Automated multi-inbox rotation</p>
                 </div>
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold dark:bg-primary/20">Active</Badge>
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold hover:bg-primary/15">
+                  Live Sending
+                </Badge>
+              </div>
+
+              {/* Dynamic Queue animation path */}
+              <div className="my-5 p-4 rounded-xl bg-slate-50 border border-slate-150 relative overflow-hidden">
+                <div className="absolute inset-0 flex items-center pointer-events-none px-12">
+                  <div className="w-full h-0.5 bg-gradient-to-r from-teal-400 via-primary to-cyan-400 opacity-20" />
+                  <span className="absolute h-1.5 w-1.5 rounded-full bg-teal-400 animate-flow-fast" />
+                  <span className="absolute h-1.5 w-1.5 rounded-full bg-primary animate-flow-delayed" />
+                </div>
+
+                <div className="flex items-center justify-between relative z-10">
+                  {/* Senders */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex -space-x-1.5">
+                      <div className="h-6 w-6 rounded-full bg-indigo-500 flex items-center justify-center text-[8px] font-bold text-white border border-white">S1</div>
+                      <div className="h-6 w-6 rounded-full bg-sky-500 flex items-center justify-center text-[8px] font-bold text-white border border-white">S2</div>
+                      <div className="h-6 w-6 rounded-full bg-violet-500 flex items-center justify-center text-[8px] font-bold text-white border border-white">S3</div>
+                    </div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Inboxes</span>
+                  </div>
+
+                  {/* Sending hub */}
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md shadow-primary/20 animate-pulse">
+                    <Zap className="h-4.5 w-4.5 text-white" />
+                  </div>
+
+                  {/* Delivered check */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-500">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Delivered</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Metric Blocks Grid */}
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Sent Today</span>
+                  <p className="text-base font-bold text-slate-800 mt-0.5">412</p>
+                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-emerald-600">
+                    <TrendingUp className="h-3 w-3" />
+                    <span>+8.2%</span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Open Rate</span>
+                  <p className="text-base font-bold text-slate-800 mt-0.5">68.4%</p>
+                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-primary">
+                    <Sparkles className="h-3 w-3" />
+                    <span>Avg: 22%</span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Bounces</span>
+                  <p className="text-base font-bold text-slate-800 mt-0.5">0.0%</p>
+                  <div className="flex items-center gap-0.5 mt-0.5 text-[9px] font-bold text-emerald-600">
+                    <ShieldCheck className="h-3 w-3" />
+                    <span>Clean</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Lower Left Floating Card */}
-            <div className="absolute -left-12 -bottom-16 z-30 w-48 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-delayed dark:border-slate-800 dark:bg-slate-950/95">
+            <div className="absolute -left-8 -bottom-16 z-30 w-48 rounded-xl border border-slate-200 bg-white/95 p-3.5 shadow-xl backdrop-blur-md animate-float-delayed">
               <div className="flex items-center gap-1.5">
                 <Zap className="h-4 w-4 text-primary" />
-                <span className="text-xs font-bold text-slate-800 dark:text-white">Real-Time Metrics</span>
+                <span className="text-xs font-bold text-slate-800">Real-Time Metrics</span>
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 font-medium leading-normal">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-normal">
                 Instant delivery statistics and open rate alerts direct from Gmail API.
               </p>
             </div>

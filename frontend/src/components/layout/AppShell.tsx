@@ -61,7 +61,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme");
       if (stored === "light" || stored === "dark") return stored;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
     return "light";
   });
@@ -73,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return stored;
       }
     }
-    return "corporate";
+    return "creative";
   });
 
   const [paletteMenuOpen, setPaletteMenuOpen] = useState(false);
